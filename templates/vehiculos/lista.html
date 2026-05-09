@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Catálogo de Vehículos</h2>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for v in vehiculos %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 transition-hover">
+                <img src="{{ url_for('static', filename='uploads/' + v.Imagen_URL) }}" 
+                     class="card-img-top" style="height: 200px; object-fit: cover;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ v.Marca }} {{ v.Modelo }}</h5>
+                    <span class="badge bg-primary mb-2">{{ v.Placa }}</span>
+                    <p class="card-text text-muted">{{ v.Color }} | {{ v.Anio }}</p>
+                    
+                    <button class="btn btn-outline-primary w-100" 
+                            data-bs-toggle="modal" data-bs-target="#modalDetalle"
+                            onclick="verDetalle('{{v.Marca}}', '{{v.Modelo}}', '{{v.Placa}}', '{{v.Color}}', '{{v.Anio}}', '{{v.Tipo}}', '{{v.Cedula_Proveedor}}', '{{v.Imagen_URL}}')">
+                        Ver más
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <nav class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% for p in range(1, total_pages + 1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('vehiculos.lista', page=p) }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+</div>
+
+<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="m_titulo">Detalle del Vehículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body row">
+                <div class="col-md-6">
+                    <img id="m_img" src="" class="img-fluid rounded" alt="Vehículo">
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Placa:</strong> <span id="m_placa"></span></p>
+                    <p><strong>Color:</strong> <span id="m_color"></span></p>
+                    <p><strong>Año:</strong> <span id="m_anio"></span></p>
+                    <p><strong>Tipo:</strong> <span id="m_tipo"></span></p>
+                    <p><strong>Cédula Proveedor:</strong> <span id="m_cedula"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function verDetalle(marca, modelo, placa, color, anio, tipo, cedula, img) {
+    document.getElementById('m_titulo').innerText = marca + " " + modelo;
+    document.getElementById('m_placa').innerText = placa;
+    document.getElementById('m_color').innerText = color;
+    document.getElementById('m_anio').innerText = anio;
+    document.getElementById('m_tipo').innerText = tipo;
+    document.getElementById('m_cedula').innerText = cedula;
+    document.getElementById('m_img').src = "/static/uploads/" + img;
+}
+</script>
+{% endblock %}

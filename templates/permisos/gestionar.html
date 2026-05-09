@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Gestión de Permisos por Rol</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form action="{{ url_for('permisos.gestionar') }}" method="GET">
+                <label>Seleccione el Rol a configurar:</label>
+                <select name="id_rol" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Seleccione un rol --</option>
+                    {% for r in roles %}
+                    <option value="{{ r.id_rol }}" {% if id_rol_seleccionado == r.id_rol %}selected{% endif %}>
+                        {{ r.nombre_rol }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+
+    {% if id_rol_seleccionado %}
+    <form method="POST">
+        <input type="hidden" name="id_rol_actual" value="{{ id_rol_seleccionado }}">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Módulo</th>
+                    <th>Crear</th>
+                    <th>Leer</th>
+                    <th>Actualizar</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in permisos %}
+                <tr>
+                    <input type="hidden" name="id_permiso" value="{{ p.id_permiso }}">
+                    <td><strong>{{ p.nombre_modulo }}</strong></td>
+                    <td><input type="checkbox" name="crear_{{ p.id_permiso }}" {% if p.p_crear %}checked{% endif %}></td>
+                    <td><input type="checkbox" name="leer_{{ p.id_permiso }}" {% if p.p_leer %}checked{% endif %}></td>
+                    <td><input type="checkbox" name="actualizar_{{ p.id_permiso }}" {% if p.p_actualizar %}checked{% endif %}></td>
+                    <td><input type="checkbox" name="eliminar_{{ p.id_permiso }}" {% if p.p_eliminar %}checked{% endif %}></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary w-100">Guardar Permisos para este Rol</button>
+    </form>
+    {% else %}
+    <div class="alert alert-info">Por favor, seleccione un rol del menú superior para ver y editar sus permisos.</div>
+    {% endif %}
+</div>
+{% endblock %}

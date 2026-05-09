@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="card auth-card border-0 p-2">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <!-- Encabezado de bienvenida -->
+                    <div class="text-center mb-5">
+                        <i class="bi bi-person-check-fill text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="fw-bold text-dark mt-3">Crear Cuenta</h2>
+                        <p class="text-muted">Únete a la red AutoMall y gestiona tu inventario con facilidad.</p>
+                    </div>
+
+                    <form action="/registro" method="POST" class="row g-4">
+                        
+                        <!-- SECCIÓN: Información Personal -->
+                        <div class="col-12">
+                            <h6 class="text-primary fw-bold text-uppercase small ls-1">Datos de Identidad</h6>
+                            <hr class="mt-1 mb-3 opacity-25">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Cédula</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-heading"></i></span>
+                                <input type="number" name="cedula" class="form-control auth-control" placeholder="Ej: 25123456" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" placeholder="Tu nombre" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" name="apellido" class="form-control" placeholder="Tu apellido" required>
+                        </div>
+
+                        <!-- SECCIÓN: Contacto y Ubicación -->
+                        <div class="col-12 mt-5">
+                            <h6 class="text-primary fw-bold text-uppercase small ls-1">Contacto y Ubicación</h6>
+                            <hr class="mt-1 mb-3 opacity-25">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Correo Electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" class="form-control auth-control" placeholder="nombre@ejemplo.com" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input type="tel" name="telefono" class="form-control auth-control" placeholder="0412-1234567" required>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Dirección de Habitación</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                <input type="text" name="direccion" class="form-control auth-control" placeholder="Ciudad, Sector, Calle..." required>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN: Seguridad -->
+                        <div class="col-12 mt-5">
+                            <h6 class="text-primary fw-bold text-uppercase small ls-1">Seguridad de la Cuenta</h6>
+                            <hr class="mt-1 mb-3 opacity-25">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="password" class="form-control auth-control" placeholder="Crea una contraseña segura" required>
+                            </div>
+                            <div class="form-text mt-2">Usa al menos 8 caracteres para mayor seguridad.</div>
+                        </div>
+
+                        <!-- Botón de Registro -->
+                        <div class="col-12 mt-5">
+                            <button type="submit" class="btn btn-registrar w-100 shadow-sm py-3">
+                                <i class="bi bi-person-plus-fill me-2"></i>Completar Registro
+                            </button>
+                            <p class="text-center mt-4 mb-0">
+                                ¿Ya tienes una cuenta? <a href="{{ url_for('auth.login') }}" class="text-primary fw-bold text-decoration-none">Inicia sesión aquí</a>
+                            </p>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

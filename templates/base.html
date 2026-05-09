@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoMall | Gestión Automotriz</title>
+    
+    <!-- Librerías Externas -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- TU ARCHIVO DE ESTILOS UNIFICADO -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="bi bi-car-front-fill me-2 text-primary"></i>AutoMall
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+
+                {% if 'usuario_nombre' in session %}
+                    {% if tiene_permiso('Usuarios', 'p_leer') %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.listar') }}">Usuarios</a></li>
+                    {% endif %}
+
+                    {% if tiene_permiso('Vehículos', 'p_leer') %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('vehiculos.lista') }}">Catálogo</a></li>
+                    {% endif %}
+
+                    {% if tiene_permiso('Vehículos', 'p_crear') %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('vehiculos.registro') }}">Nuevo Vehículo</a></li>
+                    {% endif %}
+
+                    {% if tiene_permiso('Permisos', 'p_leer') %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('permisos.gestionar') }}">Permisos</a></li>
+                    {% endif %}
+
+                    <li class="nav-item ms-lg-3">
+                        <a class="btn btn-outline-warning btn-sm rounded-pill px-3" href="/logout">
+                            <i class="bi bi-box-arrow-right"></i> Salir
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary btn-sm rounded-pill px-4 ms-lg-2" href="{{ url_for('auth.registro') }}">Registro</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer-custom">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <h5 class="fw-bold mb-3">AutoMall System</h5>
+                <p class="small text-secondary-light">Gestión inteligente de inventario. El estándar de oro para concesionarios universitarios.</p>
+            </div>
+            <div class="col-md-4 mb-4 text-center">
+                <h5 class="fw-bold mb-3">Conecta</h5>
+                <div class="social-icons">
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-twitter-x"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4 text-md-end">
+                <h5 class="fw-bold mb-3">Soporte</h5>
+                <p class="small mb-1">soporte@automall.com</p>
+                <p class="small">Barquisimeto, Venezuela</p>
+            </div>
+        </div>
+        <hr class="opacity-25">
+        <div class="text-center pb-2">
+            <p class="small mb-0 opacity-50">&copy; 2026 AutoMall. Innovación sobre ruedas.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

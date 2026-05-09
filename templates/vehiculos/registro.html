@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card card-registro border-0">
+                <div class="card-body p-5">
+                    <!-- Encabezado con ícono -->
+                    <div class="text-center mb-5">
+                        <div class="display-6 fw-bold text-dark mb-2">Registrar Nuevo Vehículo</div>
+                        <p class="text-muted">Complete los detalles técnicos para ingresar la unidad al inventario.</p>
+                        <div class="mx-auto" style="width: 50px; height: 3px; background: #007bff;"></div>
+                    </div>
+                    
+                    <form action="{{ url_for('vehiculos.registro') }}" method="POST" enctype="multipart/form-data" class="row g-4">
+                        
+                        <!-- Primera Fila: Placa y Color -->
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-hash me-2"></i>Placa</label>
+                            <input type="text" name="placa" class="form-control" placeholder="ABC-123" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-palette me-2"></i>Color</label>
+                            <input type="text" name="color" class="form-control" placeholder="Ej: Azul Medianoche" required>
+                        </div>
+
+                        <!-- Segunda Fila: Año y Tipo -->
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-calendar-event me-2"></i>Año del Modelo</label>
+                            <input type="number" name="anio" class="form-control" placeholder="2024" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-car-front me-2"></i>Categoría / Tipo</label>
+                            <input type="text" name="tipo" class="form-control" placeholder="Ej: SUV, Sedán, Deportivo" required>
+                        </div>
+
+                        <!-- Tercera Fila: Marca y Modelo -->
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-tag me-2"></i>Marca</label>
+                            <input type="text" name="marca" class="form-control" placeholder="Ej: Toyota" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-info-circle me-2"></i>Modelo Específico</label>
+                            <input type="text" name="modelo" class="form-control" placeholder="Ej: Corolla Cross" required>
+                        </div>
+
+                        <!-- Cuarta Fila: Cédula y Archivo (Separados en 12 para dar énfasis) -->
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-person-badge me-2"></i>Cédula del Proveedor</label>
+                            <input type="number" name="cedula" class="form-control" placeholder="V-27123456" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-camera me-2"></i>Fotografía del Vehículo</label>
+                            <input type="file" name="imagen" class="form-control" accept="image/*" required>
+                        </div>
+
+                        <!-- Botón de Acción -->
+                        <div class="col-12 mt-5">
+                            <button type="submit" class="btn btn-registrar w-100 shadow-sm">
+                                <i class="bi bi-plus-circle me-2"></i>Finalizar Registro de Unidad
+                            </button>
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('vehiculos.lista') }}" class="text-decoration-none small text-muted">
+                                    <i class="bi bi-arrow-left"></i> Volver al inventario sin guardar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

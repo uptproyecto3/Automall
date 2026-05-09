@@ -1,0 +1,267 @@
+/* Paleta de Colores y Variables PARA EL INDEX.HTML */
+:root {
+    --azul-oscuro: #0a192f;
+    --azul-brillante: #007bff;
+    --blanco-suave: #f8f9fa;
+    --sombra: rgba(0, 0, 0, 0.15);
+}
+
+body {
+    background-color: #f4f7f6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Hero Section & Carousel */
+.carousel-item {
+    height: 500px;
+    background-color: var(--azul-oscuro);
+}
+
+.carousel-item img {
+    object-fit: cover;
+    opacity: 0.6; /* Oscurece la imagen para que resalte el texto */
+}
+
+.carousel-caption {
+    bottom: 30%;
+    z-index: 10;
+}
+
+/* Tarjetas de Vehículos */
+.card-vehiculo {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    box-shadow: 0 4px 15px var(--sombra);
+}
+
+.card-vehiculo:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Botones Modernos */
+.btn-modern {
+    background-color: var(--azul-oscuro);
+    color: white;
+    border-radius: 50px;
+    padding: 10px 25px;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.btn-modern:hover {
+    background-color: transparent;
+    border-color: var(--azul-oscuro);
+    color: var(--azul-oscuro);
+}
+
+/* Modales */
+.modal-header {
+    background-color: var(--azul-oscuro);
+    color: white;
+}
+
+/* Secciones */
+.section-title {
+    color: var(--azul-oscuro);
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.section-title::after {
+    content: '';
+    width: 60px;
+    height: 4px;
+    background: var(--azul-brillante);
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Barra de búsqueda estilo "Glassmorphism" */
+.search-container {
+    max-width: 800px;
+    margin: -40px auto 40px; /* Sube la barra para que pise un poco el carrusel */
+    position: relative;
+    z-index: 10;
+}
+
+.search-bar {
+    background: white;
+    border-radius: 50px;
+    padding: 10px 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border: none;
+    display: flex;
+    align-items: center;
+}
+
+.search-bar input {
+    border: none;
+    padding-left: 15px;
+    font-size: 1.1rem;
+}
+
+.search-bar input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.search-bar .bi-search {
+    color: #007bff;
+    font-size: 1.2rem;
+}
+
+/* AQUI COMIENZAN LOS ESTILOS PARA EL ARCHIVO BASE.HTML */
+
+/* Importación de Fuente */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Configuración General del Cuerpo */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7f6;
+}
+
+.main-content {
+    flex: 1; /* Esto empuja el footer hacia abajo */
+}
+
+/* Navbar Moderna */
+.navbar {
+    background-color: #0a192f !important; /* Azul medianoche */
+    padding: 1rem 0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.4);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    font-weight: 400;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #007bff !important;
+    transform: scale(1.05);
+}
+
+/* Footer Profesional */
+.footer-custom {
+    background-color: #0a192f;
+    color: #f8f9fa;
+    padding: 50px 0 20px;
+    margin-top: 60px;
+    border-top: 4px solid #007bff;
+}
+
+.social-icons a {
+    font-size: 1.6rem;
+    color: #f8f9fa;
+    margin: 0 10px;
+    transition: 0.3s;
+    display: inline-block;
+}
+
+.social-icons a:hover {
+    color: #007bff;
+    transform: translateY(-5px);
+}
+
+/* Utilidades de texto para el footer */
+.footer-custom h5 {
+    color: #007bff;
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.text-secondary-light {
+    color: #aeb9c7;
+}
+
+/* ESTILOS DEL REGISTRO DE VEHICULOS*/
+
+/* Estilos para Formularios Modernos */
+.card-registro {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--azul-oscuro);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border-radius: 10px;
+    padding: 12px 15px;
+    border: 1px solid #e0e6ed;
+    background-color: #fcfdfe;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--azul-brillante);
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+    background-color: #fff;
+}
+
+/* Botón de Registro Azul Moderno */
+.btn-registrar {
+    background: linear-gradient(135deg, #0a192f 0%, #007bff 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-registrar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    color: white;
+}
+
+/* Estilo para el input de archivo */
+.form-control[type="file"] {
+    padding: 10px;
+}
+
+/* ESTILOS PARA EL REGISTRO QUE ESTA EN LA PRINCIPAL REGISTRO DE USUARIOS*/ 
+
+/* Estilos adicionales para Autenticación (Login/Registro de Usuario) */
+.auth-card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border-top: 5px solid #007bff; /* Línea azul superior para identidad de marca */
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+    color: #0a192f;
+    border-radius: 10px 0 0 10px;
+}
+
+.auth-control {
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+}
