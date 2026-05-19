@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import session, flash, redirect, url_for
-from models.db import obtener_conexion
+from models.db import obtener_conexion_seguridad
 
 # Decorador para permisos específicos (Ej: eliminar, crear)
 def requiere_permiso(modulo, tipo_permiso):
@@ -10,12 +10,12 @@ def requiere_permiso(modulo, tipo_permiso):
             id_rol = session.get('id_rol')
             if not id_rol: return redirect(url_for('auth.login'))
             
-            conexion = obtener_conexion()
+            conexion = obtener_conexion_seguridad()
             cursor = conexion.cursor(dictionary=True)
             # Consultamos si el rol tiene permiso en el módulo dado
             sql = """SELECT rp.{} as tiene_permiso 
-                     FROM rol_permisos rp 
-                     JOIN modulo m ON rp.id_modulo = m.id_modulo 
+                     FROM t_permiso_rol_modulo rp 
+                     JOIN t_modulo m ON rp.id_modulo = m.id_modulo 
                      WHERE rp.id_rol = %s AND m.nombre_modulo = %s""".format(tipo_permiso)
             cursor.execute(sql, (id_rol, modulo))
             res = cursor.fetchone()

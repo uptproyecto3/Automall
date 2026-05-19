@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 /* Paleta de Colores y Variables PARA EL INDEX.HTML */
 :root {
     --azul-oscuro: #0a192f;
@@ -119,7 +120,7 @@ body {
 /* AQUI COMIENZAN LOS ESTILOS PARA EL ARCHIVO BASE.HTML */
 
 /* Importación de Fuente */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
 
 /* Configuración General del Cuerpo */
 body {
@@ -264,4 +265,18 @@ body {
 .auth-control {
     border-left: none;
     border-radius: 0 10px 10px 0;
+}
+
+/* Estilo para el código de recuperación RECUPERACION DE CONTRASEÑAS */
+.recovery-code {
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 10px;
+    color: #007bff;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    display: inline-block;
+    border: 2px dashed #007bff;
+    margin: 20px 0;
 }

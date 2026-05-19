@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/automall.jpeg') }}">
     <title>AutoMall | Gestión Automotriz</title>
     
     <!-- Librerías Externas -->
@@ -29,31 +31,71 @@
                 <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
 
                 {% if 'usuario_nombre' in session %}
-                    {% if tiene_permiso('Usuarios', 'p_leer') %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.listar') }}">Usuarios</a></li>
-                    {% endif %}
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navOperaciones" role="button" data-bs-toggle="dropdown">
+                            Operaciones
+                        </a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><h6 class="dropdown-header">Inventario y Flota</h6></li>
+                            {% if tiene_permiso('Vehículos', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/vehiculos-catalogo"><i class="bi bi-search me-2"></i>Catálogo de Vehículos</a></li>
+                            {% endif %}
+                            <li><a class="dropdown-item" href="/mantenimiento-vehiculos"><i class="bi bi-tools me-2"></i>Mantenimiento</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Abastecimiento</h6></li>
+                            <li><a class="dropdown-item" href="/proveedores"><i class="bi bi-person-badge-fill me-2"></i>Proveedores</a></li>
+                            <li><a class="dropdown-item" href="/vehiculos"><i class="bi bi-cart-plus me-2"></i>Registro de Vehículos</a></li>
+                        </ul>
+                    </li>
 
-                    {% if tiene_permiso('Vehículos', 'p_leer') %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('vehiculos.lista') }}">Catálogo</a></li>
-                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navVentas" role="button" data-bs-toggle="dropdown">
+                            Ventas y Citas
+                        </a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="/ventas"><i class="bi bi-cash-stack me-2"></i>Venta de Vehículos</a></li>
+                            <li><a class="dropdown-item" href="/traspasos"><i class="bi bi-journal-check me-2"></i>Traspaso de Vehículos</a></li>
+                            <li><a class="dropdown-item" href="/citas"><i class="bi bi-calendar-event me-2"></i>Gestión de Citas</a></li>
+                        </ul>
+                    </li>
 
-                    {% if tiene_permiso('Vehículos', 'p_crear') %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('vehiculos.registro') }}">Nuevo Vehículo</a></li>
-                    {% endif %}
-
-                    {% if tiene_permiso('Permisos', 'p_leer') %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('permisos.gestionar') }}">Permisos</a></li>
-                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-bold text-info" href="#" id="navConfig" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear-fill me-1"></i> Sistema
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><h6 class="dropdown-header">Administración</h6></li>
+                            {% if tiene_permiso('Usuarios', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('user.listar') }}"><i class="bi bi-people me-2"></i>Gestión de Usuarios</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Permisos', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('permisos.gestionar') }}"><i class="bi bi-shield-lock me-2"></i>Permisos y Roles</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Permisos', 'p_leer') %}
+                          <li>
+                            <a class="dropdown-item" href="{{ url_for('bitacora.listar_bitacora') }}">
+                            <i class="bi bi-list-check me-2"></i>Bitácora
+                            </a>
+                            </li>
+                                {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Reportes y Datos</h6></li>
+                            <li><a class="dropdown-item" href="/reportes"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reportes Estadísticos</a></li>
+                            <li><a class="dropdown-item" href="/respaldo"><i class="bi bi-database-fill-gear me-2"></i>Mantenimiento de BD</a></li>
+                        </ul>
+                    </li>
 
                     <li class="nav-item ms-lg-3">
                         <a class="btn btn-outline-warning btn-sm rounded-pill px-3" href="/logout">
                             <i class="bi bi-box-arrow-right"></i> Salir
                         </a>
                     </li>
+
                 {% else %}
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
                     <li class="nav-item">
-                        <a class="btn btn-primary btn-sm rounded-pill px-4 ms-lg-2" href="{{ url_for('auth.registro') }}">Registro</a>
+                        <a class="btn btn-primary btn-sm rounded-pill px-4 ms-lg-2" href="{{ url_for('user.registro') }}">Registro</a>
                     </li>
                 {% endif %}
             </ul>

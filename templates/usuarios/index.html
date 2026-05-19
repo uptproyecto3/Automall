@@ -8,12 +8,12 @@
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
-                <th>Cédula</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
                 <th>Teléfono</th>
                 <th>Dirección</th>
                 <th>Correo</th>
+                <th>Cédula</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -21,23 +21,23 @@
             {% for u in usuarios %}
             <tr>
                 <td>{{ u.id }}</td>
-                <td>{{ u.cedula }}</td>
                 <td>{{ u.nombre }}</td>
                 <td>{{ u.apellido }}</td>
                 <td>{{ u.telefono }}</td>
                 <td>{{ u.direccion }}</td>
                 <td>{{ u.correo }}</td>
+                <td>{{ u.cedula_usuario }}</td>
                 <td>
-                   
                     {% if tiene_permiso('Usuarios', 'p_actualizar') %}
+                    <!-- Pasamos las variables ordenadas. Dejamos cedula_usuario de última para el modal readonly -->
                     <button 
                         class="btn btn-warning btn-sm me-2"
-                        onclick="abrirModalEditar('{{ u.id }}', '{{ u.cedula }}', '{{ u.nombre }}', '{{ u.apellido }}', '{{ u.telefono }}', '{{ u.direccion }}', '{{ u.correo }}')">
+                        onclick="abrirModalEditar('{{ u.id }}', '{{ u.nombre }}', '{{ u.apellido }}', '{{ u.telefono }}', '{{ u.direccion }}', '{{ u.correo }}', '{{ u.cedula_usuario }}')">
                         Editar
                     </button>
                     {% endif %}
 
-                   {% if tiene_permiso('Usuarios', 'p_eliminar') %}
+                    {% if tiene_permiso('Usuarios', 'p_eliminar') %}
                     <button 
                         class="btn btn-danger btn-sm"
                         onclick="confirmarEliminar('{{ u.id }}')">
@@ -63,9 +63,10 @@
                 <form id="formEditar" method="POST">
                     <input type="hidden" id="modal_id" name="id">
 
+                    <!-- Agregamos visualmente la cédula bloqueada para que el usuario la vea pero no la altere -->
                     <div class="mb-3">
                         <label class="form-label">Cédula</label>
-                        <input type="text" id="modal_cedula" name="cedula" class="form-control" required>
+                        <input type="text" id="modal_cedula" class="form-control bg-light" readonly>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
@@ -85,9 +86,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Correo Electrónico</label>
-                        <input type="email" id="modal_correo" name="email" class="form-control" required>
+                        <input type="email" id="modal_correo" name="email" class="form-control" autocomplete="off" required>
                     </div>
-                   
                 </form>
             </div>
             <div class="modal-footer">
@@ -99,24 +99,23 @@
 </div>
 
 <script>
-    // Función para abrir el modal y precargar los datos
-   function abrirModalEditar(id, cedula, nombre, apellido, telefono, direccion, correo) {
-    // 1. Rellenar campos
-    document.getElementById('modal_id').value = id;
-    document.getElementById('modal_cedula').value = cedula;
-    document.getElementById('modal_nombre').value = nombre;
-    document.getElementById('modal_apellido').value = apellido;
-    document.getElementById('modal_telefono').value = telefono;
-    document.getElementById('modal_direccion').value = direccion;
-    document.getElementById('modal_correo').value = correo;
-    
-    //Establecemos la acción con la ruta completa absoluta
-    document.getElementById('formEditar').action = `/usuarios/editar/${id}`;
-    
-    // 3. Mostramos el modal
-    var myModal = new bootstrap.Modal(document.getElementById('modalEditar'));
-    myModal.show();
-}
+    // La función ahora recibe exactamente los mismos parámetros en orden
+    function abrirModalEditar(id, nombre, apellido, telefono, direccion, correo, cedula) {
+        document.getElementById('modal_id').value = id;
+        document.getElementById('modal_nombre').value = nombre;
+        document.getElementById('modal_apellido').value = apellido;
+        document.getElementById('modal_telefono').value = telefono;
+        document.getElementById('modal_direccion').value = direccion;
+        document.getElementById('modal_correo').value = correo;
+        document.getElementById('modal_cedula').value = cedula; // Se muestra pero no se envía en el POST por no tener 'name'
+        
+        // Establecemos la acción con la ruta completa absoluta
+        document.getElementById('formEditar').action = `/usuarios/editar/${id}`;
+        
+        // Mostramos el modal de Bootstrap
+        var myModal = new bootstrap.Modal(document.getElementById('modalEditar'));
+        myModal.show();
+    }
 
     // Función para enviar el formulario del modal
     function guardarEdicion() {
@@ -130,5 +129,4 @@
         }
     }
 </script>
-
 {% endblock %}

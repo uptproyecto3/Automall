@@ -4,7 +4,6 @@ from utils.permisos import requiere_superusuario # Importamos el decorador
 permisos_bp = Blueprint('permisos', __name__)
 
 
-
 @permisos_bp.route('/gestionar', methods=['GET', 'POST'])
 @requiere_superusuario  # <--- AQUÍ ESTÁ EL BLOQUEO REAL
 def gestionar():

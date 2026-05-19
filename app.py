@@ -1,16 +1,22 @@
 from flask import Flask, render_template, session
-from models.db import obtener_conexion
+from models.db import obtener_conexion_seguridad
 
 from controllers.auth_controller import auth_bp
+from controllers.user_controller import user_bp
 from controllers.vehiculos_controller import vehiculos_bp
 from controllers.permisos_controller import permisos_bp
+from controllers.bitacora_controller import bitacora_bp
+
 
 app = Flask(__name__)
 app.secret_key = '123456789' # Necesario para las sesiones
 
 app.register_blueprint(auth_bp)
+app.register_blueprint(user_bp)
 app.register_blueprint(vehiculos_bp)
 app.register_blueprint(permisos_bp)
+app.register_blueprint(bitacora_bp)
+
 
 # Este decorador hace que la función sea accesible en cualquier HTML
 @app.context_processor
@@ -25,11 +31,11 @@ def inject_permisos():
             return True
             
         # Consultar BD para verificar permiso
-        conexion = obtener_conexion()
+        conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True)
         sql = f"""SELECT {tipo_permiso} as permiso 
-                  FROM rol_permisos rp
-                  JOIN modulo m ON rp.id_modulo = m.id_modulo
+                  FROM t_permiso_rol_modulo rp
+                  JOIN t_modulo m ON rp.id_modulo = m.id_modulo
                   WHERE rp.id_rol = %s AND m.nombre_modulo = %s"""
         cursor.execute(sql, (session.get('id_rol'), modulo))
         res = cursor.fetchone()

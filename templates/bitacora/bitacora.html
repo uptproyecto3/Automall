@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold"><i class="bi bi-list-check text-primary me-2"></i>Bitácora del Sistema</h2>
+            <p class="text-muted">Registro histórico de acciones realizadas por los usuarios.</p>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+            <i class="bi bi-printer me-2"></i>Imprimir Reporte
+        </button>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Fecha y Hora</th>
+                            <th>Usuario</th>
+                            <th>Módulo</th>
+                            <th>Acción Realizada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td class="ps-4 small text-muted">
+                                {{ log.fecha.strftime('%d/%m/%Y %H:%M:%S') }}
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark">{{ log.cedula_usuario }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 rounded-pill">
+                                    {{ log.modulo }}
+                                </span>
+                            </td>
+                            <td class="text-secondary">
+                                {{ log.accion }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                No hay registros de actividad todavía.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

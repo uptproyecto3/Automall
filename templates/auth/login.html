@@ -4,11 +4,10 @@
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center align-items-center" style="min-height: 60vh;">
         <div class="col-md-5 col-lg-4">
-            <!-- Usamos la clase auth-card que definimos antes -->
             <div class="card auth-card border-0">
                 <div class="card-body p-4 p-md-5">
                     
-                    <!-- Logo o Ícono Superior -->
+                    <!-- Logo o Ícono Superior  validaciones-->
                     <div class="text-center mb-4">
                         <div class="bg-primary bg-opacity-10 d-inline-block p-3 rounded-circle mb-3">
                             <i class="bi bi-shield-lock-fill text-primary" style="font-size: 2.5rem;"></i>
@@ -17,7 +16,10 @@
                         <p class="text-muted small">Ingresa tus credenciales para acceder</p>
                     </div>
 
-                    <!-- Manejo de Alertas (Flashed Messages) -->
+                    <!-- Contenedor dinámico para errores de JavaScript -->
+                    <div id="js-error-container"></div>
+
+                    <!-- Manejo de Alertas del Servidor (Flashed Messages) -->
                     {% with messages = get_flashed_messages() %}
                         {% if messages %}
                             {% for message in messages %}
@@ -29,7 +31,8 @@
                         {% endif %}
                     {% endwith %}
 
-                    <form action="/login" method="POST">
+                    <!-- Formulario con ID controlado por JS -->
+                    <form action="/login" method="POST" id="formLogin">
                         <!-- Campo de Correo -->
                         <div class="mb-3">
                             <label class="form-label">Correo Electrónico</label>
@@ -43,7 +46,7 @@
                         <div class="mb-4">
                             <label class="form-label d-flex justify-content-between">
                                 Contraseña
-                                <a href="#" class="text-primary text-decoration-none small">¿La olvidaste?</a>
+                                <a href="{{ url_for('auth.recuperar') }}" class="text-primary text-decoration-none small">¿La olvidaste?</a>
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
@@ -60,7 +63,7 @@
                     <!-- Pie del Card -->
                     <div class="text-center mt-5">
                         <p class="text-muted small">¿No tienes cuenta aún?</p>
-                        <a href="{{ url_for('auth.registro') }}" class="btn btn-outline-primary btn-sm px-4 rounded-pill">
+                        <a href="{{ url_for('user.registro') }}" class="btn btn-outline-primary btn-sm px-4 rounded-pill">
                             Regístrate en AutoMall
                         </a>
                     </div>
@@ -77,4 +80,7 @@
         </div>
     </div>
 </div>
+
+<!-- Vinculación del archivo JS externo -->
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %}
