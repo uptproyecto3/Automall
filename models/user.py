@@ -1,4 +1,4 @@
-from models.db import obtener_conexion_seguridad
+from models.db import obtener_conexion_seguridad 
 
 class Usuario:
     def __init__(self, cedula_usuario, nombre, apellido, telefono, direccion, correo, password):
@@ -39,16 +39,16 @@ class Usuario:
         return usuarios
 
     @staticmethod
-    def eliminar(id):
+    def eliminar(cedula_usuario):
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor()
-        cursor.execute("UPDATE t_usuario SET  WHERE id = %s", (id,))
+        cursor.execute("UPDATE t_usuario SET estado = 0 WHERE cedula_usuario = %s", (cedula_usuario,))
         conexion.commit()
         cursor.close()
         conexion.close()
 
     @staticmethod
-    def actualizar(id, nombre, apellido, telefono, direccion, correo):
+    def actualizar(cedula_usuario, nombre, apellido, telefono, direccion, correo):
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor()
         
@@ -60,14 +60,41 @@ class Usuario:
                 telefono = %s, 
                 direccion = %s, 
                 correo = %s
-            WHERE id = %s
+            WHERE cedula_usuario = %s
         """
         
         # Ajustamos las variables para que coincidan con los %s
-        val = (nombre, apellido, telefono, direccion, correo, id)
+        val = (nombre, apellido, telefono, direccion, correo, cedula_usuario)
         
         cursor.execute(sql, val)
         conexion.commit()
         cursor.close()
         conexion.close()
+
+    @staticmethod
+    def obtener_por_cedula(cedula_usuario):
+        conexion = obtener_conexion_seguridad()
+        cursor = conexion.cursor(dictionary=True)
         
+        # Consulta limpia usando tus campos nativos cod_rol
+        sql = """
+            SELECT u.nombre, 
+                u.apellido, 
+                u.telefono, 
+                u.direccion, 
+                u.correo, 
+                u.cedula_usuario, 
+                r.nombre_rol 
+            FROM t_usuario u
+            LEFT JOIN t_rol r ON u.cod_rol = r.cod_rol
+            WHERE u.cedula_usuario = %s
+        """
+        
+        # Saneamos la tupla para que no confunda al conector de MySQL
+        cursor.execute(sql, (cedula_usuario,))
+        usuario = cursor.fetchone()
+        
+        cursor.close()
+        conexion.close()
+        return usuario
+            

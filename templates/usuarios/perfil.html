@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Bloque para mostrar mensajes Flash (Éxito / Errores) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show rounded-pill px-4 shadow-sm" role="alert">
+                    <i class="bi {% if category == 'success' %}bi-check-circle-fill me-2{% else %}bi-exclamation-triangle-fill me-2{% endif %}"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- COLUMNA IZQUIERDA: Tarjeta de Presentación Dinámica -->
+        <div class="col-lg-4">
+            <div class="card card-profile-sidebar border-0 shadow-sm text-center h-100">
+                <div class="profile-avatar-wrapper py-5 bg-dark position-relative">
+                    <div class="profile-avatar-circle mx-auto bg-primary text-white d-flex align-items-center justify-content-center shadow">
+                        <i class="bi bi-person-fill display-3"></i>
+                    </div>
+                </div>
+                <div class="card-body pt-0 px-4 pb-4">
+                    <!-- Variables reales conectadas -->
+                    <h4 class="fw-bold text-dark mb-1 mt-3">{{ usuario.nombre }} {{ usuario.apellido }}</h4>
+                    <span class="badge bg-soft-primary text-primary text-uppercase rounded-pill px-3 py-2 fw-semibold mb-3">{{ usuario.nombre_rol }}</span>
+                    <p class="text-muted small mb-4"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Barquisimeto, Venezuela</p>
+                    
+                    <hr class="opacity-25">
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="/" class="btn btn-outline-secondary rounded-pill btn-sm">
+                            <i class="bi bi-arrow-left me-2"></i>Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: Panel de Gestión con Pestañas -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <!-- Navegación de Pestañas de Bootstrap -->
+                    <ul class="nav nav-tabs card-header-tabs custom-profile-tabs border-0" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold px-4 py-3" id="datos-tab" data-bs-toggle="tab" data-bs-target="#datos-panel" type="button" role="tab">
+                                <i class="bi bi-person-vcard me-2"></i>Datos Personales
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold px-4 py-3" id="password-tab" data-bs-toggle="tab" data-bs-target="#password-panel" type="button" role="tab">
+                                <i class="bi bi-shield-lock me-2"></i>Seguridad de Acceso
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="tab-content" id="profileTabsContent">
+                        
+                        <!-- PESTAÑA 1: MOSTRAR DATOS PERSONALES -->
+                        <div class="tab-pane fade show active" id="datos-panel" role="tabpanel">
+                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom"><i class="bi bi-info-circle-fill text-primary me-2"></i>Información Registrada</h5>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="text-secondary small fw-bold text-uppercase tracking-wider">Cédula de Identidad</label>
+                                    <div class="profile-data-box d-flex align-items-center">
+                                        <i class="bi bi-card-text me-3 fs-5 text-muted"></i>
+                                        <span class="fs-6 text-dark fw-medium">{{ usuario.cedula_usuario }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="text-secondary small fw-bold text-uppercase tracking-wider">Teléfono de Contacto</label>
+                                    <div class="profile-data-box d-flex align-items-center">
+                                        <i class="bi bi-telephone me-3 fs-5 text-muted"></i>
+                                        <span class="fs-6 text-dark fw-medium">{{ usuario.telefono }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="text-secondary small fw-bold text-uppercase tracking-wider">Correo Electrónico</label>
+                                    <div class="profile-data-box d-flex align-items-center">
+                                        <i class="bi bi-envelope me-3 fs-5 text-muted"></i>
+                                        <span class="fs-6 text-dark fw-medium">{{ usuario.correo }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="text-secondary small fw-bold text-uppercase tracking-wider">Dirección Residencial</label>
+                                    <div class="profile-data-box d-flex align-items-center align-items-start">
+                                        <i class="bi bi-geo-alt me-3 fs-5 text-muted mt-1"></i>
+                                        <span class="fs-6 text-dark fw-medium">{{ usuario.direccion }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PESTAÑA 2: FORMULARIOS DE SEGURIDAD (HTML RUTAS VACÍAS) -->
+                        <div class="tab-pane fade" id="password-panel" role="tabpanel">
+                            <div class="row g-4">
+                                <!-- Bloque Cambiar Contraseña -->
+                                <div class="col-md-6 border-end-custom">
+                                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-key-fill text-warning me-2"></i>Actualizar Contraseña</h5>
+                                    <form action="#" method="POST" class="needs-validation" novalidate>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">Contraseña Actual</label>
+                                            <input type="password" name="password_actual" class="form-control form-control-custom" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">Nueva Contraseña</label>
+                                            <input type="password" name="nueva_password" class="form-control form-control-custom" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">Confirmar Nueva Contraseña</label>
+                                            <input type="password" name="confirmar_password" class="form-control form-control-custom" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill fw-bold">Actualizar Clave</button>
+                                    </form>
+                                </div>
+
+                                <!-- Bloque Preguntas de Seguridad -->
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-success me-2"></i>Preguntas de Seguridad</h5>
+                                    <p class="text-muted small mb-3">Úsalas para recuperar tu acceso en caso de bloqueo externo.</p>
+                                    <form action="#" method="POST">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">Pregunta de Seguridad #1</label>
+                                            <select name="pregunta_1" class="form-select form-control-custom" required>
+                                                <option value="" disabled selected>Selecciona una opción...</option>
+                                                <option value="¿Nombre de tu primera mascota?">¿Nombre de tu primera mascota?</option>
+                                                <option value="¿Ciudad donde nacieron tus padres?">¿Ciudad donde nacieron tus padres?</option>
+                                                <option value="¿Nombre de tu escuela primaria?">¿Nombre de tu escuela primaria?</option>
+                                            </select>
+                                            <input type="text" name="respuesta_1" class="form-control form-control-custom mt-2" placeholder="Tu respuesta..." required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">Pregunta de Seguridad #2</label>
+                                            <select name="pregunta_2" class="form-select form-control-custom" required>
+                                                <option value="" disabled selected>Selecciona una opción...</option>
+                                                <option value="¿Marca de tu primer automóvil?">¿Marca de tu primer automóvil?</option>
+                                                <option value="¿Tu comida favorita de la infancia?">¿Tu comida favorita de la infancia?</option>
+                                                <option value="¿Nombre de tu personaje de ficción favorito?">¿Nombre de tu personaje de ficción favorito?</option>
+                                            </select>
+                                            <input type="text" name="respuesta_2" class="form-control form-control-custom mt-2" placeholder="Tu respuesta..." required>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill fw-bold">Guardar Preguntas</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

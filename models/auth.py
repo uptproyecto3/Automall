@@ -1,6 +1,6 @@
 from models.db import obtener_conexion_seguridad
 
-class Auth:
+class Auth: 
     def __init__(self, cedula_usuario, nombre, apellido, telefono, direccion, correo, password):
         self.cedula_usuario = cedula_usuario
         self.nombre = nombre
@@ -15,7 +15,7 @@ class Auth:
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True)
         # IMPORTANTE: Asegúrate de incluir 'id_rol' en el SELECT
-        sql = "SELECT id, nombre, cedula_usuario, id_rol FROM t_usuario WHERE correo = %s AND password = %s"
+        sql = "SELECT cedula_usuario, nombre, cod_rol FROM t_usuario WHERE correo = %s AND password = %s"
         cursor.execute(sql, (correo, password))
         usuario = cursor.fetchone()
         conexion.close()
@@ -37,7 +37,7 @@ class Auth:
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True)
         # Comparamos correo y respuesta
-        sql = "SELECT id FROM t_usuario WHERE correo = %s AND respuesta_seguridad = %s"
+        sql = "SELECT cedula_usuario FROM t_usuario WHERE correo = %s AND respuesta_seguridad = %s"
         cursor.execute(sql, (correo, respuesta))
         usuario = cursor.fetchone()
         conexion.close()

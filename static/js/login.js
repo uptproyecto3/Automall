@@ -1,87 +1,74 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const formulario = document.getElementById('formLogin');
-    const contenedorErrores = document.getElementById('js-error-container');
-    const botonEnviar = formulario ? formulario.querySelector('button[type="submit"]') : null;
-    let intervaloCuentaRegresiva;
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("formLogin");
+    const emailInput = document.getElementById("emailInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const btnSubmit = document.getElementById("btnSubmit");
+    const errorContainer = document.getElementById("js-error-container");
+    const passwordHelp = document.getElementById("passwordHelp");
 
-    // Función para activar visualmente el bloqueo en el navegador
-    function activarBloqueoVisual(segundosFaltantes) {
-        if (botonEnviar) botonEnviar.disabled = true; // Deshabilitamos el botón
-        
-        clearInterval(intervaloCuentaRegresiva);
-        
-        intervaloCuentaRegresiva = setInterval(() => {
-            if (segundosFaltantes <= 0) {
-                clearInterval(intervaloCuentaRegresiva);
-                if (botonEnviar) botonEnviar.disabled = false;
-                contenedorErrores.innerHTML = ''; // Limpiamos el mensaje
-                return;
-            }
+    // Expresión regular para correos estándar (evita caracteres raros o maliciosos)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-            const minutos = Math.floor(segundosFaltantes / 60);
-            const segundos = segundosFaltantes % 60;
-            
-            contenedorErrores.innerHTML = `
-                <div class="alert alert-danger d-flex align-items-center py-2 border-0 shadow-sm mb-3" role="alert">
-                    <i class="bi bi-clock-history me-2"></i>
-                    <div class="small">Demasiados intentos. Formulario bloqueado. Reintente en: <b>${minutos}m ${segundos}s</b></div>
+    // Función principal para validar el estado de los campos y el botón
+    function validarFormulario() {
+        const emailValue = emailInput.value.trim();
+        const passwordValue = passwordInput.value;
+        let errores = [];
+
+        // 1. Validar formato de correo
+        const correoValido = emailRegex.test(emailValue) && emailValue.length <= 35; 
+        if (emailValue !== "" && !correoValido) {
+            errores.push("El formato del correo no es válido o contiene caracteres no permitidos.");
+        }
+
+        // 2. Validar que la contraseña sea exactamente de 8 caracteres
+        const passwordValida = passwordValue.length === 8;
+
+        // Actualizar visualmente el texto de ayuda de la contraseña
+        if (passwordValue.length > 0 && !passwordValida) {
+            passwordHelp.textContent = `Llevas ${passwordValue.length} de 8 caracteres de forma obligatoria.`;
+            passwordHelp.className = "form-text small text-danger mt-1";
+        } else if (passwordValida) {
+            passwordHelp.textContent = "¡Tamaño de contraseña correcto!";
+            passwordHelp.className = "form-text small text-success mt-1";
+        } else {
+            passwordHelp.textContent = "Debe tener exactamente 8 caracteres.";
+            passwordHelp.className = "form-text small text-muted mt-1";
+        }
+
+        // 3. Renderizar errores dinámicos en pantalla si los hay
+        if (errores.length > 0) {
+            errorContainer.innerHTML = `
+                <div class="alert alert-warning py-2 border-0 shadow-sm mb-4 small d-flex align-items-center">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    <div>${errores[0]}</div>
                 </div>
             `;
-            segundosFaltantes--;
-        }, 1000);
-    }
+        } else {
+            errorContainer.innerHTML = "";
+        }
 
-    // Al cargar la página, le preguntamos al backend si existe un bloqueo activo
-    async function verificarBloqueoServidor() {
-        try {
-            const respuesta = await fetch('/api/chequear-bloqueo');
-            const datos = await respuesta.json();
-            
-            if (datos.bloqueado) {
-                activarBloqueoVisual(datos.segundos);
-            }
-        } catch (error) {
-            console.error("Error al verificar estado de bloqueo:", error);
+        // 4. Activar o apagar el botón de submit
+        if (correoValido && passwordValida) {
+            btnSubmit.removeAttribute("disabled");
+        } else {
+            btnSubmit.setAttribute("disabled", "true");
         }
     }
 
-    // Ejecutar la verificación inicial
-    verificarBloqueoServidor();
+    // Restringir caracteres extraños en el input del correo mientras se escribe
+    emailInput.addEventListener("input", function () {
+        // Remueve cualquier caracter que no deba ir en un correo básico
+        this.value = this.value.replace(/[^a-zA-Z0-9@._%+-]/g, "");
+        validarFormulario();
+    });
 
-    if (formulario) {
-        formulario.addEventListener('submit', function(e) {
-            const correo = formulario.querySelector('input[name="email"]').value.trim();
-            const password = formulario.querySelector('input[name="password"]').value.trim();
-            let errores = [];
-            
-            // Si el botón está deshabilitado por el intervalo, no permitimos hacer nada
-            if (botonEnviar && botonEnviar.disabled) {
-                e.preventDefault();
-                return;
-            }
-
-            // Validaciones básicas de formato anteriores
-            if (!correo || !password) {
-                errores.push("Todos los campos son estrictamente obligatorios.");
-            }
-            
-            const regexCorreo = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            if (correo && !regexCorreo.test(correo)) {
-                errores.push("El correo electrónico ingresado no tiene un formato válido.");
-            }
-            
-            if (errores.length > 0) {
-                e.preventDefault();
-                contenedorErrores.innerHTML = '';
-                errores.forEach(function(error) {
-                    contenedorErrores.innerHTML += `
-                        <div class="alert alert-danger d-flex align-items-center py-2 border-0 shadow-sm mb-3" role="alert">
-                            <i class="bi bi-shield-slash-fill me-2"></i>
-                            <div class="small">${error}</div>
-                        </div>
-                    `;
-                });
-            }
-        });
-    }
+    // Controlar el tamaño estricto de la contraseña mientras escribe
+    passwordInput.addEventListener("input", function () {
+        // Si digita más de 8, lo corta inmediatamente en tiempo de ejecución
+        if (this.value.length > 8) {
+            this.value = this.value.slice(0, 8);
+        }
+        validarFormulario();
+    });
 });

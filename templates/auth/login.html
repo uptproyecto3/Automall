@@ -27,7 +27,7 @@
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                     <div class="small">{{ message }}</div>
                                 </div>
-                            {% endfor %}
+                             Paciencia{% endfor %}
                         {% endif %}
                     {% endwith %}
 
@@ -38,7 +38,7 @@
                             <label class="form-label">Correo Electrónico</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
-                                <input type="email" name="email" class="form-control auth-control" placeholder="nombre@ejemplo.com" required>
+                                <input type="email" name="email" id="emailInput" class="form-control auth-control" placeholder="nombre@ejemplo.com" required>
                             </div>
                         </div>
 
@@ -50,12 +50,14 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
-                                <input type="password" name="password" class="form-control auth-control" placeholder="••••••••" required>
+                                <input type="password" name="password" id="passwordInput" class="form-control auth-control" placeholder="••••••••" required>
                             </div>
+                            <!-- Pequeño indicador de ayuda visual para los 8 dígitos -->
+                            <div id="passwordHelp" class="form-text small text-muted mt-1">Debe tener exactamente 8 caracteres.</div>
                         </div>
 
                         <!-- Botón de Entrada -->
-                        <button type="submit" class="btn btn-registrar w-100 py-2 shadow-sm">
+                        <button type="submit" id="btnSubmit" class="btn btn-registrar w-100 py-2 shadow-sm" disabled>
                             <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
                         </button>
                     </form>

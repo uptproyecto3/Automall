@@ -65,7 +65,7 @@
                             <i class="bi bi-gear-fill me-1"></i> Sistema
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                            <li><h6 class="dropdown-header">Administración</h6></li>
+                            <li><h6 class="dropdown-header">Administration</h6></li>
                             {% if tiene_permiso('Usuarios', 'p_leer') %}
                                 <li><a class="dropdown-item" href="{{ url_for('user.listar') }}"><i class="bi bi-people me-2"></i>Gestión de Usuarios</a></li>
                             {% endif %}
@@ -73,12 +73,12 @@
                                 <li><a class="dropdown-item" href="{{ url_for('permisos.gestionar') }}"><i class="bi bi-shield-lock me-2"></i>Permisos y Roles</a></li>
                             {% endif %}
                             {% if tiene_permiso('Permisos', 'p_leer') %}
-                          <li>
-                            <a class="dropdown-item" href="{{ url_for('bitacora.listar_bitacora') }}">
-                            <i class="bi bi-list-check me-2"></i>Bitácora
-                            </a>
-                            </li>
-                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('bitacora.listar_bitacora') }}">
+                                        <i class="bi bi-list-check me-2"></i>Bitácora
+                                    </a>
+                                </li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Reportes y Datos</h6></li>
                             <li><a class="dropdown-item" href="/reportes"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reportes Estadísticos</a></li>
@@ -86,7 +86,14 @@
                         </ul>
                     </li>
 
-                    <li class="nav-item ms-lg-3">
+                    <!-- BOTÓN DE PERFIL UNIFICADO -->
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-link nav-link text-light d-flex align-items-center" href="{{ url_for('user.perfil') }}" id="navPerfil" role="button">
+                            <i class="bi bi-person-circle fs-5 me-2 text-primary"></i> {{ session['usuario_nombre'] }}
+                        </a>
+                    </li>
+
+                    <li class="nav-item ms-lg-2">
                         <a class="btn btn-outline-warning btn-sm rounded-pill px-3" href="/logout">
                             <i class="bi bi-box-arrow-right"></i> Salir
                         </a>

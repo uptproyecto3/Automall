@@ -22,23 +22,31 @@ app.register_blueprint(bitacora_bp)
 @app.context_processor
 def inject_permisos():
     def tiene_permiso(modulo, tipo_permiso):
-        # Si no hay sesión, no tiene permisos
-        if 'id_rol' not in session:
+        if 'cod_rol' not in session:
             return False
         
         # Super Usuario (ID 1) siempre tiene todo
-        if session.get('id_rol') == 1:
+        if session.get('cod_rol') == 1:
             return True
             
-        # Consultar BD para verificar permiso
+        # Si por error el HTML envía un permiso vacío, evitamos el choque de SQL
+        if not tipo_permiso or tipo_permiso.strip() == "":
+            return False
+            
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True)
-        sql = f"""SELECT {tipo_permiso} as permiso 
-                  FROM t_permiso_rol_modulo rp
-                  JOIN t_modulo m ON rp.id_modulo = m.id_modulo
-                  WHERE rp.id_rol = %s AND m.nombre_modulo = %s"""
-        cursor.execute(sql, (session.get('id_rol'), modulo))
+        
+        sql = f"""
+            SELECT rp.{tipo_permiso} as permiso 
+            FROM t_permiso_rol_modulo rp
+            JOIN t_modulo m ON rp.cod_modulo = m.cod_modulo
+            WHERE rp.cod_rol = %s AND m.nombre_modulo = %s
+        """
+        
+        cursor.execute(sql, (session.get('cod_rol'), modulo))
         res = cursor.fetchone()
+        
+        cursor.close()  # Cerramos el cursor
         conexion.close()
         
         return res and res['permiso'] == 1

@@ -7,18 +7,30 @@ def requiere_permiso(modulo, tipo_permiso):
     def decorador(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            id_rol = session.get('id_rol')
-            if not id_rol: return redirect(url_for('auth.login'))
+            cod_rol = session.get('cod_rol')
+            if not cod_rol: 
+                return redirect(url_for('auth.login'))
+            
+            # Validación de seguridad para evitar que 'tipo_permiso' llegue vacío
+            if not tipo_permiso or tipo_permiso.strip() == "":
+                flash("Error interno: Tipo de permiso no especificado.")
+                return redirect(url_for('index'))
             
             conexion = obtener_conexion_seguridad()
             cursor = conexion.cursor(dictionary=True)
-            # Consultamos si el rol tiene permiso en el módulo dado
-            sql = """SELECT rp.{} as tiene_permiso 
-                     FROM t_permiso_rol_modulo rp 
-                     JOIN t_modulo m ON rp.id_modulo = m.id_modulo 
-                     WHERE rp.id_rol = %s AND m.nombre_modulo = %s""".format(tipo_permiso)
-            cursor.execute(sql, (id_rol, modulo))
+            
+            # Usamos f-string limpio. Nota que inyectamos el nombre de la columna rp.{}
+            sql = f"""
+                SELECT rp.{tipo_permiso} as tiene_permiso 
+                FROM t_permiso_rol_modulo rp 
+                JOIN t_modulo m ON rp.cod_modulo = m.cod_modulo 
+                WHERE rp.cod_rol = %s AND m.nombre_modulo = %s
+            """
+            
+            cursor.execute(sql, (cod_rol, modulo))
             res = cursor.fetchone()
+            
+            cursor.close()  # Cerramos siempre el cursor
             conexion.close()
             
             if res and res['tiene_permiso'] == 1:
@@ -34,7 +46,7 @@ def requiere_superusuario(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         # Asumiendo que el ID del 'Super Usuario' en tu BD es 1
-        if session.get('id_rol') == 1:
+        if session.get('cod_rol') == 1:
             return f(*args, **kwargs)
         else:
             flash("Acceso restringido solo para Super Usuarios.")
