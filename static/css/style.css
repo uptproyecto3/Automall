@@ -207,6 +207,11 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
+.bg-primary {
+    --bs-bg-opacity: 1;
+    background-color: rgb(21 45 80) !important;
+}
+
 .form-label {
     font-weight: 600;
     color: var(--azul-oscuro);

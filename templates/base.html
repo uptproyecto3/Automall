@@ -41,11 +41,27 @@
                             {% if tiene_permiso('Vehículos', 'p_leer') %}
                                 <li><a class="dropdown-item" href="/vehiculos-catalogo"><i class="bi bi-search me-2"></i>Catálogo de Vehículos</a></li>
                             {% endif %}
-                            <li><a class="dropdown-item" href="/mantenimiento-vehiculos"><i class="bi bi-tools me-2"></i>Mantenimiento</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Abastecimiento</h6></li>
-                            <li><a class="dropdown-item" href="/proveedores"><i class="bi bi-person-badge-fill me-2"></i>Proveedores</a></li>
-                            <li><a class="dropdown-item" href="/vehiculos"><i class="bi bi-cart-plus me-2"></i>Registro de Vehículos</a></li>
+                            <li><a class="dropdown-item" href="/vehiculos/registro"><i class="bi bi-cart-plus me-2"></i>Registro de Vehículos</a></li>
+                            <li><a class="dropdown-item" href="/marcas/registro"><i class="bi bi-cart-plus me-2"></i>Nueva Marca</a></li>
+                            <li><a class="dropdown-item" href="/modelos/registro"><i class="bi bi-cart-plus me-2"></i>Nuevo Modelo</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navVentas" role="button" data-bs-toggle="dropdown">
+                            Mantenimiento
+                        </a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><h6 class="dropdown-header">Control de Mantenimiento</h6></li>
+                            <li><a class="dropdown-item" href="/mantenimiento"><i class="bi bi-calendar-event me-2"></i>Gestionar Mantenimiento</a></li>
+                            <li><a class="dropdown-item" href="/servicios"><i class="bi bi-cash-stack me-2"></i>Gestionar Servicios</a></li>
+                            <li><a class="dropdown-item" href="/taller"><i class="bi bi-calendar-event me-2"></i>Taller de Vehículos</a></li>
+
+                            <li><h6 class="dropdown-header">Control de Compras</h6></li>
+                            <li><a class="dropdown-item" href="/compra"><i class="bi bi-calendar-event me-2"></i>Compras de Accesorios</a></li>
+                            <li><a class="dropdown-item" href="/insumos"><i class="bi bi-calendar-event me-2"></i>Insumos de Vehículos</a></li>
                         </ul>
                     </li>
 
@@ -54,35 +70,52 @@
                             Ventas y Citas
                         </a>
                         <ul class="dropdown-menu shadow border-0">
-                            <li><a class="dropdown-item" href="/ventas"><i class="bi bi-cash-stack me-2"></i>Venta de Vehículos</a></li>
-                            <li><a class="dropdown-item" href="/traspasos"><i class="bi bi-journal-check me-2"></i>Traspaso de Vehículos</a></li>
+                            <li><h6 class="dropdown-header">Registro de Citas</h6></li>
                             <li><a class="dropdown-item" href="/citas"><i class="bi bi-calendar-event me-2"></i>Gestión de Citas</a></li>
+
+                            <li><h6 class="dropdown-header">Ventas y Pagos</h6></li>
+                            <li><a class="dropdown-item" href="/ventas"><i class="bi bi-cash-stack me-2"></i>Venta de Vehículos</a></li>
+                            <li><a class="dropdown-item" href="/citas"><i class="bi bi-calendar-event me-2"></i>Gestionar Pagos</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navVentas" role="button" data-bs-toggle="dropdown">
+                            Usuarios
+                        </a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><h6 class="dropdown-header">Administracion</h6></li>
+                            {% if tiene_permiso('Usuarios', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('user.listar') }}"><i class="bi bi-people me-2"></i>Gestión de Usuarios</a></li>
+                            {% endif %}
+                            <li><a class="dropdown-item" href="{{ url_for('proveedores.lista') }}"><i class="bi bi-calendar-event me-2"></i>Proveedores</a></li>
+                            <li><a class="dropdown-item" href="/usuarios/cliente"><i class="bi bi-cash-stack me-2"></i>Clientes</a></li>
+                            <li><a class="dropdown-item" href="/usuarios/vendedor"><i class="bi bi-calendar-event me-2"></i>Vendedores</a></li>
                         </ul>
                     </li>
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle fw-bold text-info" href="#" id="navConfig" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear-fill me-1"></i> Sistema
+                            <i class="bi bi-gear-fill me-1"></i> Configuración
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0">
                             <li><h6 class="dropdown-header">Administration</h6></li>
-                            {% if tiene_permiso('Usuarios', 'p_leer') %}
-                                <li><a class="dropdown-item" href="{{ url_for('user.listar') }}"><i class="bi bi-people me-2"></i>Gestión de Usuarios</a></li>
-                            {% endif %}
+                            
                             {% if tiene_permiso('Permisos', 'p_leer') %}
                                 <li><a class="dropdown-item" href="{{ url_for('permisos.gestionar') }}"><i class="bi bi-shield-lock me-2"></i>Permisos y Roles</a></li>
                             {% endif %}
                             {% if tiene_permiso('Permisos', 'p_leer') %}
+                                
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Reportes y Datos</h6></li>
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('bitacora.listar_bitacora') }}">
                                         <i class="bi bi-list-check me-2"></i>Bitácora
                                     </a>
                                 </li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Reportes y Datos</h6></li>
                             <li><a class="dropdown-item" href="/reportes"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reportes Estadísticos</a></li>
-                            <li><a class="dropdown-item" href="/respaldo"><i class="bi bi-database-fill-gear me-2"></i>Mantenimiento de BD</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('mantenimiento.vista_mantenimiento') }}"><i class="bi bi-database-fill-gear me-2"></i>Mantenimiento de BD</a></li>
                         </ul>
                     </li>
 

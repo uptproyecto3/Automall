@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white p-3">
+                    <h4 class="mb-0 text-center"><i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Proveedor</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('proveedores.registro') }}" method="POST" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Cédula / RIF</label>
+                            <input type="number" name="cedula" class="form-control" placeholder="Ej: 27123456" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Razón Social</label>
+                            <input type="text" name="razon_social" class="form-control" placeholder="Nombre o Empresa" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control" placeholder="04xx-xxxxxxx">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tipo de Proveedor</label>
+                            <select name="tipo" class="form-select">
+                                <option value="Natural">Persona Natural</option>
+                                <option value="Jurídico">Persona Jurídica</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Dirección</label>
+                            <textarea name="direccion" class="form-control" rows="2" placeholder="Ubicación física"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Estado en Sistema</label>
+                            <select name="estado" class="form-select">
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-success w-100 shadow-sm py-2 fw-bold">Finalizar Registro</button>
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('proveedores.lista') }}" class="text-decoration-none text-muted">
+                                    <i class="bi bi-arrow-left"></i> Ver listado de proveedores
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
