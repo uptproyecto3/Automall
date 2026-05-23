@@ -1,12 +1,17 @@
 from flask import Flask, render_template, session
 from models.db import obtener_conexion_seguridad
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv() # Esto lee el archivo .env automáticamente
+
 from controllers.auth_controller import auth_bp
 from controllers.user_controller import user_bp
 from controllers.vehiculos_controller import vehiculos_bp
 from controllers.permisos_controller import permisos_bp
 from controllers.bitacora_controller import bitacora_bp
-
+from controllers.mantenimientobd_controller import mantenimiento_bp
 
 app = Flask(__name__)
 app.secret_key = '123456789' # Necesario para las sesiones
@@ -16,6 +21,7 @@ app.register_blueprint(user_bp)
 app.register_blueprint(vehiculos_bp)
 app.register_blueprint(permisos_bp)
 app.register_blueprint(bitacora_bp)
+app.register_blueprint(mantenimiento_bp)
 
 
 # Este decorador hace que la función sea accesible en cualquier HTML
