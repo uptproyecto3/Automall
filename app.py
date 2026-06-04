@@ -9,9 +9,12 @@ load_dotenv() # Esto lee el archivo .env automáticamente
 from controllers.auth_controller import auth_bp
 from controllers.user_controller import user_bp
 from controllers.vehiculos_controller import vehiculos_bp
+from controllers.catalogo_controller import catalogo_bp
 from controllers.marca_controller import marca_bp
 from controllers.modelo_controller import modelo_bp
-from controllers.proveedor_controller import proveedor_bp  
+from controllers.proveedor_controller import proveedor_bp 
+from controllers.venta_controller import ventas_bp 
+from controllers.citas_controller import citas_bp 
 
 from controllers.permisos_controller import permisos_bp
 from controllers.bitacora_controller import bitacora_bp
@@ -23,9 +26,12 @@ app.secret_key = '123456789' # Necesario para las sesiones
 app.register_blueprint(auth_bp)
 app.register_blueprint(user_bp)
 app.register_blueprint(vehiculos_bp)
+app.register_blueprint(catalogo_bp, url_prefix='/vehiculos')
 app.register_blueprint(marca_bp)
 app.register_blueprint(modelo_bp)
 app.register_blueprint(proveedor_bp)
+app.register_blueprint(ventas_bp)
+app.register_blueprint(citas_bp)
 
 app.register_blueprint(permisos_bp)
 app.register_blueprint(bitacora_bp)

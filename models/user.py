@@ -84,7 +84,8 @@ class Usuario:
                 u.apellido, 
                 u.telefono, 
                 u.direccion, 
-                u.correo, 
+                u.correo,
+                u.foto, 
                 u.cedula_usuario, 
                 r.nombre_rol 
             FROM t_usuario u
@@ -99,4 +100,24 @@ class Usuario:
         cursor.close()
         conexion.close()
         return usuario
+    
+    @staticmethod
+    def buscar_cliente_por_cedula(cedula):
+        conexion = obtener_conexion_seguridad()
+        cursor = conexion.cursor(dictionary=True) # dictionary=True para manejarlo fácil como JSON
+        
+        # SQL Seguro: Filtramos por cédula y por el rol 4 (Clientes)
+        sql = """
+            SELECT cedula_usuario, nombre, apellido 
+            FROM t_usuario 
+            WHERE cedula_usuario = %s AND cod_rol = 4 
+            LIMIT 1
+        """
+        
+        cursor.execute(sql, (cedula,))
+        cliente = cursor.fetchone()
+        
+        cursor.close()
+        conexion.close()
+        return cliente
             

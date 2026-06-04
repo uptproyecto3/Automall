@@ -1,6 +1,8 @@
 import os
 import subprocess
 from flask import Blueprint, render_template, jsonify, request, send_file
+from utils.decorators import login_required
+from utils.permisos import requiere_permiso
 
 mantenimiento_bp = Blueprint('mantenimiento', __name__)
 
@@ -10,6 +12,8 @@ DB_PASS = ""
 DATABASES = ["seguridad", "automall"]
 
 @mantenimiento_bp.route('/mantenimiento')
+@login_required
+@requiere_permiso('Mantenimiento a la BD', 'p_leer')
 def vista_mantenimiento():
     # Renderiza la interfaz con los botones
     return render_template('mantenimiento/mant_bd.html')

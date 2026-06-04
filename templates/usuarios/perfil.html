@@ -18,28 +18,36 @@
     <div class="row g-4">
         <!-- COLUMNA IZQUIERDA: Tarjeta de Presentación Dinámica -->
         <div class="col-lg-4">
-            <div class="card card-profile-sidebar border-0 shadow-sm text-center h-100">
-                <div class="profile-avatar-wrapper py-5 bg-dark position-relative">
-                    <div class="profile-avatar-circle mx-auto bg-primary text-white d-flex align-items-center justify-content-center shadow">
-                        <i class="bi bi-person-fill display-3"></i>
-                    </div>
-                </div>
-                <div class="card-body pt-0 px-4 pb-4">
-                    <!-- Variables reales conectadas -->
-                    <h4 class="fw-bold text-dark mb-1 mt-3">{{ usuario.nombre }} {{ usuario.apellido }}</h4>
-                    <span class="badge bg-soft-primary text-primary text-uppercase rounded-pill px-3 py-2 fw-semibold mb-3">{{ usuario.nombre_rol }}</span>
-                    <p class="text-muted small mb-4"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Barquisimeto, Venezuela</p>
-                    
-                    <hr class="opacity-25">
-                    
-                    <div class="d-grid gap-2 mt-4">
-                        <a href="/" class="btn btn-outline-secondary rounded-pill btn-sm">
-                            <i class="bi bi-arrow-left me-2"></i>Volver al Inicio
-                        </a>
-                    </div>
-                </div>
+    <div class="card card-profile-sidebar border-0 shadow-sm text-center h-100">
+        <div class="profile-avatar-wrapper py-5 bg-dark position-relative">
+            <div class="profile-avatar-circle mx-auto bg-primary text-white d-flex align-items-center justify-content-center shadow overflow-hidden" style="width: 120px; height: 120px; border-radius: 50%;">
+                
+                {% if usuario.foto %}
+                    <img src="{{ url_for('static', filename='uploads/perfiles/' + usuario.foto) }}" 
+                         alt="Foto de {{ usuario.nombre }}" 
+                         class="img-fluid w-100 h-100" 
+                         style="object-fit: cover;">
+                {% else %}
+                    <i class="bi bi-person-fill display-3"></i>
+                {% endif %}
+                
             </div>
         </div>
+        <div class="card-body pt-0 px-4 pb-4">
+            <h4 class="fw-bold text-dark mb-1 mt-3">{{ usuario.nombre }} {{ usuario.apellido }}</h4>
+            <span class="badge bg-soft-primary text-primary text-uppercase rounded-pill px-3 py-2 fw-semibold mb-3">{{ usuario.nombre_rol }}</span>
+            <p class="text-muted small mb-4"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Barquisimeto, Venezuela</p>
+            
+            <hr class="opacity-25">
+            
+            <div class="d-grid gap-2 mt-4">
+                <a href="/" class="btn btn-outline-secondary rounded-pill btn-sm">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- COLUMNA DERECHA: Panel de Gestión con Pestañas -->
         <div class="col-lg-8">
