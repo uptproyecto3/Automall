@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 27-05-2026 a las 05:56:35
+-- Tiempo de generación: 04-06-2026 a las 21:00:40
 -- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Versión de PHP: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,6 +24,19 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `t_banco_preguntas`
+--
+
+CREATE TABLE `t_banco_preguntas` (
+  `cod_preguntas` int(11) NOT NULL,
+  `pregunta_seguridad_1` varchar(50) NOT NULL,
+  `pregunta_seguridad_2` varchar(50) NOT NULL,
+  `cedula_usuario` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `t_bitacora`
 --
 
@@ -36,27 +49,18 @@ CREATE TABLE `t_bitacora` (
   `fecha` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
--- Volcado de datos para la tabla `t_bitacora`
+-- Estructura de tabla para la tabla `t_det_repuesta`
 --
 
-INSERT INTO `t_bitacora` (`cod_bitacora`, `usuario`, `cedula_usuario`, `accion`, `modulo`, `fecha`) VALUES
-(1, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 21:44:17'),
-(2, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 21:45:41'),
-(3, 'Generacion', '28123456', 'Inició Sesión', 'Autenticación', '2026-05-13 21:45:58'),
-(4, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 21:46:47'),
-(5, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 21:52:30'),
-(6, 'Pedro', '27123456', 'Eliminó el Usuario ID: 4', 'Usuarios', '2026-05-13 21:52:42'),
-(7, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 21:55:04'),
-(8, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 21:57:57'),
-(9, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 22:23:12'),
-(10, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 22:31:48'),
-(11, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 22:39:39'),
-(12, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-13 22:45:23'),
-(13, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-14 00:10:00'),
-(14, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-14 00:10:36'),
-(15, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-15 20:32:53'),
-(16, 'Pedro', '27123456', 'Inició Sesión', 'Autenticación', '2026-05-15 20:33:13');
+CREATE TABLE `t_det_repuesta` (
+  `cod_repuesta` int(11) NOT NULL,
+  `respuesta_seguridad_1` varchar(50) NOT NULL,
+  `repuesta_seguridad_2` varchar(50) NOT NULL,
+  `cod_preguntas` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -78,7 +82,8 @@ INSERT INTO `t_modulo` (`cod_modulo`, `nombre_modulo`, `estatus`) VALUES
 (1, 'Usuarios', 1),
 (2, 'Vehículos', 1),
 (3, 'Mantenimiento', 1),
-(4, 'Bitacora', 1);
+(4, 'Bitacora', 1),
+(5, 'Mantenimiento a la BD', 1);
 
 -- --------------------------------------------------------
 
@@ -143,7 +148,9 @@ CREATE TABLE `t_rol` (
 INSERT INTO `t_rol` (`cod_rol`, `nombre_rol`, `descripcion_rol`, `estatus`) VALUES
 (1, 'Super Usuario', 'Acceso total al sistema', 1),
 (2, 'Administrador', 'Gestión operativa del negocio', 1),
-(3, 'Vendedor', 'Atención al cliente y catálogos', 1);
+(3, 'Vendedor', 'Atención al cliente y catálogos', 1),
+(4, 'Cliente', 'Encargado de comprar y agendar cita', 1),
+(5, 'Jefe de patio', 'Encargado de revsion de los vehiculos', 1);
 
 -- --------------------------------------------------------
 
@@ -159,27 +166,21 @@ CREATE TABLE `t_usuario` (
   `direccion` text NOT NULL,
   `correo` varchar(50) NOT NULL,
   `password` varchar(160) NOT NULL,
-  `pregunta_seguridad_1` varchar(255) DEFAULT NULL,
-  `respuesta_seguridad_1` varchar(255) DEFAULT NULL,
-  `pregunta_seguridad_2` varchar(255) DEFAULT NULL,
-  `respuesta_seguridad_2` varchar(255) DEFAULT NULL,
   `estado` int(11) NOT NULL DEFAULT 1,
   `cod_rol` int(11) DEFAULT 3,
   `foto` varchar(255) DEFAULT 'default.png'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `t_usuario`
---
-
-INSERT INTO `t_usuario` (`cedula_usuario`, `nombre`, `apellido`, `telefono`, `direccion`, `correo`, `password`, `pregunta_seguridad_1`, `respuesta_seguridad_1`, `pregunta_seguridad_2`, `respuesta_seguridad_2`, `estado`, `cod_rol`, `foto`) VALUES
-('20123456', 'Zoom', 'Camacaro', '02512514852', 'Centro de Convenciones Principal', 'zoom@gmail.com', '12345678', NULL, NULL, NULL, NULL, 1, 3, '20123456_670513070_1621940843066734_827325321992557727_n.jpg'),
-('27123456', 'Pedro', 'Camacaro', '02512514852', 'Centro carrera 16', 'amazon@gmail.com', '12345678', 'libro favorito', 'biblia', 'lugar favorito', 'barquisimeto', 1, 1, 'default.png'),
-('28123456', 'Zoom', 'Pastor', '02512514852', 'Cabudare agua viva', 'generation@gmail.com', '12345678', 'personaje favorito', 'superman', 'comida favorita', 'sushi', 1, 3, 'default.png');
-
---
 -- Índices para tablas volcadas
 --
+
+--
+-- Indices de la tabla `t_banco_preguntas`
+--
+ALTER TABLE `t_banco_preguntas`
+  ADD PRIMARY KEY (`cod_preguntas`),
+  ADD UNIQUE KEY `cedula_usuario` (`cedula_usuario`);
 
 --
 -- Indices de la tabla `t_bitacora`
@@ -187,6 +188,13 @@ INSERT INTO `t_usuario` (`cedula_usuario`, `nombre`, `apellido`, `telefono`, `di
 ALTER TABLE `t_bitacora`
   ADD PRIMARY KEY (`cod_bitacora`),
   ADD KEY `t_bitacora_ibfk_usuario` (`cedula_usuario`);
+
+--
+-- Indices de la tabla `t_det_repuesta`
+--
+ALTER TABLE `t_det_repuesta`
+  ADD PRIMARY KEY (`cod_repuesta`),
+  ADD UNIQUE KEY `cod_preguntas` (`cod_preguntas`);
 
 --
 -- Indices de la tabla `t_modulo`
@@ -227,16 +235,28 @@ ALTER TABLE `t_usuario`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `t_banco_preguntas`
+--
+ALTER TABLE `t_banco_preguntas`
+  MODIFY `cod_preguntas` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `t_bitacora`
 --
 ALTER TABLE `t_bitacora`
   MODIFY `cod_bitacora` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
+-- AUTO_INCREMENT de la tabla `t_det_repuesta`
+--
+ALTER TABLE `t_det_repuesta`
+  MODIFY `cod_repuesta` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `t_modulo`
 --
 ALTER TABLE `t_modulo`
-  MODIFY `cod_modulo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `cod_modulo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `t_permiso_rol_modulo`
@@ -254,17 +274,29 @@ ALTER TABLE `t_personal`
 -- AUTO_INCREMENT de la tabla `t_rol`
 --
 ALTER TABLE `t_rol`
-  MODIFY `cod_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `cod_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restricciones para tablas volcadas
 --
 
 --
+-- Filtros para la tabla `t_banco_preguntas`
+--
+ALTER TABLE `t_banco_preguntas`
+  ADD CONSTRAINT `t_banco_preguntas_ibfk_1` FOREIGN KEY (`cedula_usuario`) REFERENCES `t_usuario` (`cedula_usuario`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `t_bitacora`
 --
 ALTER TABLE `t_bitacora`
   ADD CONSTRAINT `t_bitacora_ibfk_usuario` FOREIGN KEY (`cedula_usuario`) REFERENCES `t_usuario` (`cedula_usuario`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `t_det_repuesta`
+--
+ALTER TABLE `t_det_repuesta`
+  ADD CONSTRAINT `t_det_repuesta_ibfk_1` FOREIGN KEY (`cod_preguntas`) REFERENCES `t_banco_preguntas` (`cod_preguntas`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `t_permiso_rol_modulo`
