@@ -1,28 +1,30 @@
 from models.db import obtener_conexion_seguridad 
 
 class Usuario:
-    def __init__(self, cedula_usuario, nombre, apellido, telefono, direccion, correo, password):
-        self.cedula = cedula_usuario
+    def __init__(self, cedula, nombre, apellido, telefono, direccion, correo, password, foto):
+        self.cedula = cedula
         self.nombre = nombre
         self.apellido = apellido
         self.telefono = telefono
         self.direccion = direccion
         self.correo = correo
         self.password = password
+        self.foto = foto # Nueva propiedad
 
     def guardar(self):
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor()
+        # Agregamos 'foto' a la consulta SQL
         sql = """
             INSERT INTO t_usuario 
-            (cedula_usuario, nombre, apellido, telefono, direccion, correo, password) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            (cedula_usuario, nombre, apellido, telefono, direccion, correo, password, foto) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
-        val = (self.cedula_usuario, self.nombre, self.apellido, 
-               self.telefono, self.direccion, self.correo, self.password)
+        val = (self.cedula, self.nombre, self.apellido, 
+               self.telefono, self.direccion, self.correo, self.password, self.foto)
         
         cursor.execute(sql, val)
-        conexion.commit()  # Esto guarda los cambios en MySQL
+        conexion.commit()
         
         cursor.close()
         conexion.close()

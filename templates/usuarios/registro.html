@@ -7,16 +7,32 @@
             <div class="card auth-card border-0 p-2">
                 <div class="card-body p-4 p-md-5">
   
-                    <!-- Encabezado de bienvenida -->
                     <div class="text-center mb-5">
                         <i class="bi bi-person-check-fill text-primary" style="font-size: 3rem;"></i>
                         <h2 class="fw-bold text-dark mt-3">Crear Cuenta</h2>
                         <p class="text-muted">Únete a la red AutoMall y gestiona tu inventario con facilidad.</p>
                     </div>
 
-                    <form action="/registro" method="POST" class="row g-4">
+                    <form action="/registro" method="POST" enctype="multipart/form-data" class="row g-4">
                         
-                        <!-- SECCIÓN: Información Personal -->
+                        <div class="col-12 text-center mb-4">
+                            <h6 class="text-primary fw-bold text-uppercase small ls-1">Foto de Perfil</h6>
+                            <hr class="mt-1 mb-3 opacity-25">
+                            <div class="d-flex justify-content-center">
+                                <div class="position-relative">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center shadow-sm border" style="width: 130px; height: 130px; overflow: hidden; border: 3px solid #fff !important;">
+                                        <i class="bi bi-camera-fill text-muted fs-1" id="preview-icon"></i>
+                                        <img id="img-preview" src="#" class="d-none w-100 h-100 object-fit-cover">
+                                    </div>
+                                    <label for="foto_perfil" class="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0 shadow-sm d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </label>
+                                    <input type="file" name="foto_perfil" id="foto_perfil" class="d-none" accept="image/*" onchange="previewImage(this)">
+                                </div>
+                            </div>
+                            <div class="form-text mt-2">Haz clic en el botón azul para subir tu foto.</div>
+                        </div>
+
                         <div class="col-12">
                             <h6 class="text-primary fw-bold text-uppercase small ls-1">Datos de Identidad</h6>
                             <hr class="mt-1 mb-3 opacity-25">
@@ -40,7 +56,6 @@
                             <input type="text" name="apellido" class="form-control" placeholder="Tu apellido" required>
                         </div>
 
-                        <!-- SECCIÓN: Contacto y Ubicación -->
                         <div class="col-12 mt-5">
                             <h6 class="text-primary fw-bold text-uppercase small ls-1">Contacto y Ubicación</h6>
                             <hr class="mt-1 mb-3 opacity-25">
@@ -70,7 +85,6 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN: Seguridad -->
                         <div class="col-12 mt-5">
                             <h6 class="text-primary fw-bold text-uppercase small ls-1">Seguridad de la Cuenta</h6>
                             <hr class="mt-1 mb-3 opacity-25">
@@ -85,7 +99,6 @@
                             <div class="form-text mt-2">Usa al menos 8 caracteres para mayor seguridad.</div>
                         </div>
 
-                        <!-- Botón de Registro -->
                         <div class="col-12 mt-5">
                             <button type="submit" class="btn btn-registrar w-100 shadow-sm py-3">
                                 <i class="bi bi-person-plus-fill me-2"></i>Completar Registro
@@ -101,4 +114,23 @@
         </div>
     </div>
 </div>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('img-preview');
+    const icon = document.getElementById('preview-icon');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.remove('d-none');
+            icon.classList.add('d-none');
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 {% endblock %}

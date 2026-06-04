@@ -1,8 +1,11 @@
+import os
+from werkzeug.utils import secure_filename
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models.user import Usuario
 from utils.decorators import login_required
 from utils.permisos import requiere_permiso
 from models.bitacora import Bitacora 
+
 
 user_bp = Blueprint('user', __name__) 
 
@@ -26,15 +29,33 @@ def perfil():
 @user_bp.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
+        # 1. Manejar el archivo de la foto
+        foto = request.files.get('foto_perfil')
+        nombre_foto = "default.png" # Foto por defecto si no suben nada
+        
+        if foto and foto.filename != '':
+            # 1. Extraemos la extensión del archivo original (ej: .jpg)
+            # Todo este bloque debe llevar 8 espacios (o 2 tabs) de indentación
+            extension = os.path.splitext(foto.filename)[1]
+            
+            # 2. Creamos el nuevo nombre usando solo la cédula y la extensión
+            cedula = request.form['cedula']
+            nombre_foto = secure_filename(f"{cedula}{extension}")
+            
+            # 3. Definimos la ruta y guardamos
+            ruta_guardado = os.path.join('static', 'uploads', 'perfiles', nombre_foto)
+            foto.save(ruta_guardado)
     
+        # 2. Crear usuario incluyendo la foto (Fuera del if de la foto, pero dentro del POST)
         nuevo_usuario = Usuario(
-            request.form['cedula_usuario'],
+            request.form['cedula'],
             request.form['nombre'],
             request.form['apellido'],
             request.form['telefono'],
             request.form['direccion'],
             request.form['email'],
-            request.form['password']
+            request.form['password'],
+            nombre_foto 
         )
         nuevo_usuario.guardar()
         
