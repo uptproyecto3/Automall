@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 05-06-2026 a las 11:38:24
+-- Tiempo de generación: 05-06-2026 a las 15:50:52
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -62,8 +62,7 @@ CREATE TABLE `t_bitacora` (
 
 CREATE TABLE `t_det_repuesta` (
   `cod_repuesta` int(11) NOT NULL,
-  `respuesta_seguridad_1` varchar(50) NOT NULL,
-  `repuesta_seguridad_2` varchar(50) NOT NULL,
+  `respuesta` varchar(50) NOT NULL,
   `cod_preguntas` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

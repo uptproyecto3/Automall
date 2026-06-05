@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 05-06-2026 a las 11:38:03
+-- Tiempo de generación: 05-06-2026 a las 15:47:28
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -158,11 +158,10 @@ CREATE TABLE `det_mantenimiento` (
 
 CREATE TABLE `det_nom_digital` (
   `cod_det_digital` int(11) NOT NULL,
-  `zelle` varchar(50) NOT NULL,
-  `paypal` varchar(50) NOT NULL,
-  `dolar` varchar(50) NOT NULL,
-  `euro` varchar(50) NOT NULL,
-  `cod_mon_digital` int(11) NOT NULL
+  `monto` int(100) NOT NULL,
+  `referencia` int(20) NOT NULL,
+  `cod_mon_digital` int(11) NOT NULL,
+  `cod_det_pago` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -331,9 +330,7 @@ CREATE TABLE `moneda` (
 CREATE TABLE `moneda_digital` (
   `cod_mon_digital` int(11) NOT NULL,
   `nombre_digital` varchar(50) NOT NULL,
-  `simbolo_digital` varchar(30) DEFAULT NULL,
-  `monto` int(100) DEFAULT NULL,
-  `cod_det_pago` int(11) NOT NULL
+  `simbolo_digital` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -505,7 +502,8 @@ ALTER TABLE `det_mantenimiento`
 --
 ALTER TABLE `det_nom_digital`
   ADD PRIMARY KEY (`cod_det_digital`),
-  ADD UNIQUE KEY `cod_mon_digital` (`cod_mon_digital`);
+  ADD UNIQUE KEY `cod_mon_digital` (`cod_mon_digital`),
+  ADD UNIQUE KEY `cod_det_pago` (`cod_det_pago`);
 
 --
 -- Indices de la tabla `det_pago`
@@ -586,8 +584,7 @@ ALTER TABLE `moneda`
 -- Indices de la tabla `moneda_digital`
 --
 ALTER TABLE `moneda_digital`
-  ADD PRIMARY KEY (`cod_mon_digital`),
-  ADD UNIQUE KEY `cod_det_pago` (`cod_det_pago`);
+  ADD PRIMARY KEY (`cod_mon_digital`);
 
 --
 -- Indices de la tabla `pago_cuentas`
@@ -834,7 +831,8 @@ ALTER TABLE `det_mantenimiento`
 -- Filtros para la tabla `det_nom_digital`
 --
 ALTER TABLE `det_nom_digital`
-  ADD CONSTRAINT `det_nom_digital_ibfk_1` FOREIGN KEY (`cod_mon_digital`) REFERENCES `moneda_digital` (`cod_mon_digital`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `det_nom_digital_ibfk_1` FOREIGN KEY (`cod_mon_digital`) REFERENCES `moneda_digital` (`cod_mon_digital`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `det_nom_digital_ibfk_2` FOREIGN KEY (`cod_det_pago`) REFERENCES `det_pago` (`cod_det_pago`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `det_pago`
@@ -874,12 +872,6 @@ ALTER TABLE `insumos`
 --
 ALTER TABLE `modelo`
   ADD CONSTRAINT `modelo_ibfk_1` FOREIGN KEY (`cod_marca`) REFERENCES `marca` (`cod_marca`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `moneda_digital`
---
-ALTER TABLE `moneda_digital`
-  ADD CONSTRAINT `moneda_digital_ibfk_1` FOREIGN KEY (`cod_det_pago`) REFERENCES `det_pago` (`cod_det_pago`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `pago_cuentas`
