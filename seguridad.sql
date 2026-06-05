@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 04-06-2026 a las 21:00:40
+-- Tiempo de generación: 05-06-2026 a las 11:38:24
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -29,8 +29,13 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `t_banco_preguntas` (
   `cod_preguntas` int(11) NOT NULL,
-  `pregunta_seguridad_1` varchar(50) NOT NULL,
-  `pregunta_seguridad_2` varchar(50) NOT NULL,
+  `nombre_primera_mascota` varchar(50) DEFAULT NULL,
+  `nombre_ciudad_nacimiento` varchar(50) DEFAULT NULL,
+  `nombre_escuela_primaria` varchar(50) DEFAULT NULL,
+  `segundo_nombre_padre` varchar(50) DEFAULT NULL,
+  `primer_juguete_favorito` varchar(50) DEFAULT NULL,
+  `nombre_comida favorita` varchar(50) DEFAULT NULL,
+  `nombre_color_favorito` varchar(50) DEFAULT NULL,
   `cedula_usuario` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
