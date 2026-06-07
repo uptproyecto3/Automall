@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/automall.jpeg') }}">
+    <link class="rounded-circle" rel="icon" type="image/png" href="{{ url_for('static', filename='img/automall.jpeg') }}">
     <title>AutoMall | Gestión Automotriz</title>
     
-    <!-- Librerías Externas -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
-    <!-- TU ARCHIVO DE ESTILOS UNIFICADO -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -33,7 +31,6 @@
                 {% if 'usuario_nombre' in session %}
                     
                     {# DROPDOWN: OPERACIONES #}
-                    {# Se muestra si tiene permiso en Catálogo, Vehículos, Marcas O Modelos #}
                     {% if tiene_permiso('Catálogo', 'p_leer') or tiene_permiso('Vehículos', 'p_leer') or tiene_permiso('Marca', 'p_leer') or tiene_permiso('Modelo', 'p_leer') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navOperaciones" role="button" data-bs-toggle="dropdown">
@@ -41,30 +38,49 @@
                         </a>
                         <ul class="dropdown-menu shadow border-0">
                             <li><h6 class="dropdown-header">Inventario y Flota</h6></li>
-                            {% if tiene_permiso('Vehículo', 'p_leer') %}
+                            {% if tiene_permiso('Catalogo', 'p_leer') %}
                                 <li><a class="dropdown-item" href="{{ url_for('catalogo.lista_publica') }}"><i class="bi bi-search me-2"></i>Catálogo de Vehículos</a></li>
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Abastecimiento</h6></li>
-                            <li><a class="dropdown-item" href="/vehiculos/lista"><i class="bi bi-cart-plus me-2"></i>Vehículos</a></li>
-                            <li><a class="dropdown-item" href="/marcas/registro"><i class="bi bi-cart-plus me-2"></i>Nueva Marca</a></li>
-                            <li><a class="dropdown-item" href="/modelos/registro"><i class="bi bi-cart-plus me-2"></i>Nuevo Modelo</a></li>
+                            {% if tiene_permiso('Vehiculos', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/vehiculos/lista"><i class="bi bi-cart-plus me-2"></i>Vehículos</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Marca', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('marca.registro_marca') }}"><i class="bi bi-cart-plus me-2"></i>Nueva Marca</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Modelo', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('modelo.registro_modelo') }}"><i class="bi bi-cart-plus me-2"></i>Nuevo Modelo</a></li>
+                            {% endif %}
                         </ul>
                     </li>
+                    {% endif %}
 
+                    {# DROPDOWN: MANTENIMIENTO #}
+                    {% if tiene_permiso('Mantenimiento', 'p_leer') or tiene_permiso('Servicios', 'p_leer') or tiene_permiso('Taller', 'p_leer') or tiene_permiso('Compras', 'p_leer') or tiene_permiso('Insumos', 'p_leer') %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navVentas" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navMantenimiento" role="button" data-bs-toggle="dropdown">
                             Mantenimiento
                         </a>
                         <ul class="dropdown-menu shadow border-0">
                             <li><h6 class="dropdown-header">Control de Mantenimiento</h6></li>
-                            <li><a class="dropdown-item" href="/mantenimiento"><i class="bi bi-calendar-event me-2"></i>Gestionar Mantenimiento</a></li>
-                            <li><a class="dropdown-item" href="/servicios"><i class="bi bi-cash-stack me-2"></i>Gestionar Servicios</a></li>
-                            <li><a class="dropdown-item" href="/taller"><i class="bi bi-calendar-event me-2"></i>Taller de Vehículos</a></li>
-
+                            {% if tiene_permiso('Mantenimiento', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/mantenimiento"><i class="bi bi-calendar-event me-2"></i>Gestionar Mantenimiento</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Servicios', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/servicios"><i class="bi bi-cash-stack me-2"></i>Gestionar Servicios</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Taller', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/taller"><i class="bi bi-calendar-event me-2"></i>Taller de Vehículos</a></li>
+                            {% endif %}
+                            
                             <li><h6 class="dropdown-header">Control de Compras</h6></li>
-                            <li><a class="dropdown-item" href="/compra"><i class="bi bi-calendar-event me-2"></i>Compras de Accesorios</a></li>
-                            <li><a class="dropdown-item" href="/insumos"><i class="bi bi-calendar-event me-2"></i>Insumos de Vehículos</a></li>
+                            {% if tiene_permiso('Compras', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/compra"><i class="bi bi-calendar-event me-2"></i>Compras de Accesorios</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Insumos', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/insumos"><i class="bi bi-calendar-event me-2"></i>Insumos de Vehículos</a></li>
+                            {% endif %}
                         </ul>
                     </li>
                     {% endif %}
@@ -76,27 +92,18 @@
                             Ventas y Citas
                         </a>
                         <ul class="dropdown-menu shadow border-0">
-                            <li><h6 class="dropdown-header">Registro de Citas</h6></li> 
-                            <li><a class="dropdown-item" href="{{ url_for('citas.consultar') }}"><i class="bi bi-calendar-event me-2"></i>Gestión de Citas</a></li>
-
-                            <li><h6 class="dropdown-header">Ventas y Pagos</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('ventas.registrar_venta') }}"><i class="bi bi-cash-stack me-2"></i>Venta de Vehículos</a></li>
-                            <li><a class="dropdown-item" href="/pagos"><i class="bi bi-calendar-event me-2"></i>Gestionar Pagos</a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navVentas" role="button" data-bs-toggle="dropdown">
-                            Usuarios
-                        </a>
-                        <ul class="dropdown-menu shadow border-0">
-                            <li><h6 class="dropdown-header">Administracion</h6></li>
-                            {% if tiene_permiso('Usuarios', 'p_leer') %}
-                                <li><a class="dropdown-item" href="{{ url_for('user.listar') }}"><i class="bi bi-people me-2"></i>Gestión de Usuarios</a></li>
+                            {% if tiene_permiso('Citas', 'p_leer') %}
+                                <li><h6 class="dropdown-header">Registro de Citas</h6></li> 
+                                <li><a class="dropdown-item" href="{{ url_for('citas.consultar') }}"><i class="bi bi-calendar-event me-2"></i>Gestión de Citas</a></li>
                             {% endif %}
-                            <li><a class="dropdown-item" href="{{ url_for('proveedores.lista') }}"><i class="bi bi-calendar-event me-2"></i>Proveedores</a></li>
-                            <li><a class="dropdown-item" href="/usuarios/cliente"><i class="bi bi-cash-stack me-2"></i>Clientes</a></li>
-                            <li><a class="dropdown-item" href="/usuarios/vendedor"><i class="bi bi-calendar-event me-2"></i>Vendedores</a></li>
+                            
+                            <li><h6 class="dropdown-header">Ventas y Pagos</h6></li>
+                            {% if tiene_permiso('Ventas', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('ventas.registrar_venta') }}"><i class="bi bi-cash-stack me-2"></i>Venta de Vehículos</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Pagos', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/pagos"><i class="bi bi-calendar-event me-2"></i>Gestionar Pagos</a></li>
+                            {% endif %}
                         </ul>
                     </li>
                     {% endif %}
@@ -104,35 +111,58 @@
                     {# DROPDOWN: USUARIOS #}
                     {% if tiene_permiso('Usuarios', 'p_leer') or tiene_permiso('Proveedor', 'p_leer') or tiene_permiso('Clientes', 'p_leer') or tiene_permiso('Vendedor', 'p_leer') %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle fw-bold text-info" href="#" id="navConfig" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear-fill me-1"></i> Configuración
+                        <a class="nav-link dropdown-toggle" href="#" id="navUsuarios" role="button" data-bs-toggle="dropdown">
+                            Usuarios
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                            <li><h6 class="dropdown-header">Administration</h6></li>
-                            
-                            {% if tiene_permiso('Permisos', 'p_leer') %}
-                                <li><h6 class="dropdown-header">Administración</h6></li>
-                                <li><a class="dropdown-item" href="{{ url_for('permisos.gestionar') }}"><i class="bi bi-shield-lock me-2"></i>Permisos y Roles</a></li>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><h6 class="dropdown-header">Administración</h6></li>
+                            {% if tiene_permiso('Usuarios', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('user.listar') }}"><i class="bi bi-people me-2"></i>Gestión de Usuarios</a></li>
                             {% endif %}
-                            {% if tiene_permiso('Permisos', 'p_leer') %}
-                                
+                            {% if tiene_permiso('Proveedor', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('proveedores.lista') }}"><i class="bi bi-calendar-event me-2"></i>Proveedores</a></li>
                             {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Reportes y Datos</h6></li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('bitacora.listar_bitacora') }}">
-                                        <i class="bi bi-list-check me-2"></i>Bitácora
-                                    </a>
-                                </li>
-                            <li><a class="dropdown-item" href="/reportes"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reportes Estadísticos</a></li>
+                            {% if tiene_permiso('Clientes', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/usuarios/cliente"><i class="bi bi-cash-stack me-2"></i>Clientes</a></li>
                             {% endif %}
-                            {% if tiene_permiso('Mantenimiento a la BD', 'p_leer') %}
-                            <li><a class="dropdown-item" href="{{ url_for('mantenimiento.vista_mantenimiento') }}"><i class="bi bi-database-fill-gear me-2"></i>Mantenimiento de BD</a></li>
+                            {% if tiene_permiso('Vendedor', 'p_leer') %}
+                                <li><a class="dropdown-item" href="/usuarios/vendedor"><i class="bi bi-calendar-event me-2"></i>Vendedores</a></li>
                             {% endif %}
                         </ul>
                     </li>
                     {% endif %}
 
+                    {# DROPDOWN: CONFIGURACIÓN #}
+                    {% if tiene_permiso('Permisos', 'p_leer') or tiene_permiso('Bitacora', 'p_leer') or tiene_permiso('Mantenimiento a la BD', 'p_leer') %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-bold text-info" href="#" id="navConfig" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear-fill me-1"></i> Configuración
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><h6 class="dropdown-header">Administración</h6></li>
+                            {% if tiene_permiso('Permisos', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('permisos.gestionar') }}"><i class="bi bi-shield-lock me-2"></i>Permisos y Roles</a></li>
+                            {% endif %}
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Reportes y Datos</h6></li>
+                            {% if tiene_permiso('Bitacora', 'p_leer') %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('bitacora.listar_bitacora') }}">
+                                        <i class="bi bi-list-check me-2"></i>Bitácora
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li><a class="dropdown-item" href="/reportes"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reportes Estadísticos</a></li>
+                            
+                            {% if tiene_permiso('Mantenimiento a la BD', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('mantenimiento.vista_mantenimiento') }}"><i class="bi bi-database-fill-gear me-2"></i>Mantenimiento de BD</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    {# BOTONES DE PERFIL Y SALIDA #}
                     <li class="nav-item ms-lg-2">
                         <a class="btn btn-link nav-link text-light d-flex align-items-center" href="{{ url_for('user.perfil') }}">
                             <i class="bi bi-person-circle fs-5 me-2 text-primary"></i> {{ session['usuario_nombre'] }}

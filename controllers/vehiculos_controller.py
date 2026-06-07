@@ -2,11 +2,8 @@ import os
 from flask import Blueprint, render_template, request, redirect, flash, url_for
 from models.vehiculo import Vehiculo
 from models.marca import Marca        
-from models.modelo import Modelo      
-from models.proveedor import Proveedor 
-from models.marca import Marca        # Importar tus otros modelos
-from models.modelo import Modelo      # Importar tus otros modelos
-from models.proveedor import Proveedor # Importar tus otros modelos
+from models.modelo import Modelo   
+from models.proveedor import Proveedor   
 from werkzeug.utils import secure_filename
 from utils.permisos import requiere_permiso
 
@@ -66,5 +63,4 @@ def registro():
 @requiere_permiso('Vehiculos', 'p_leer')
 def lista():
     vehiculos = Vehiculo.obtener_todos()
-    return render_template('vehiculos/lista.html', vehiculos=vehiculos)
     return render_template('vehiculos/lista.html', vehiculos=vehiculos)
