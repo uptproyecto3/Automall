@@ -32,6 +32,9 @@
 
                 {% if 'usuario_nombre' in session %}
                     
+                    {# DROPDOWN: OPERACIONES #}
+                    {# Se muestra si tiene permiso en Catálogo, Vehículos, Marcas O Modelos #}
+                    {% if tiene_permiso('Catálogo', 'p_leer') or tiene_permiso('Vehículos', 'p_leer') or tiene_permiso('Marca', 'p_leer') or tiene_permiso('Modelo', 'p_leer') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navOperaciones" role="button" data-bs-toggle="dropdown">
                             Operaciones
@@ -64,9 +67,12 @@
                             <li><a class="dropdown-item" href="/insumos"><i class="bi bi-calendar-event me-2"></i>Insumos de Vehículos</a></li>
                         </ul>
                     </li>
+                    {% endif %}
 
+                    {# DROPDOWN: VENTAS Y CITAS #}
+                    {% if tiene_permiso('Citas', 'p_leer') or tiene_permiso('Ventas', 'p_leer') or tiene_permiso('Pagos', 'p_leer') %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navVentas" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navVentasCitas" role="button" data-bs-toggle="dropdown">
                             Ventas y Citas
                         </a>
                         <ul class="dropdown-menu shadow border-0">
@@ -93,7 +99,10 @@
                             <li><a class="dropdown-item" href="/usuarios/vendedor"><i class="bi bi-calendar-event me-2"></i>Vendedores</a></li>
                         </ul>
                     </li>
+                    {% endif %}
 
+                    {# DROPDOWN: USUARIOS #}
+                    {% if tiene_permiso('Usuarios', 'p_leer') or tiene_permiso('Proveedor', 'p_leer') or tiene_permiso('Clientes', 'p_leer') or tiene_permiso('Vendedor', 'p_leer') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle fw-bold text-info" href="#" id="navConfig" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-gear-fill me-1"></i> Configuración
@@ -102,6 +111,7 @@
                             <li><h6 class="dropdown-header">Administration</h6></li>
                             
                             {% if tiene_permiso('Permisos', 'p_leer') %}
+                                <li><h6 class="dropdown-header">Administración</h6></li>
                                 <li><a class="dropdown-item" href="{{ url_for('permisos.gestionar') }}"><i class="bi bi-shield-lock me-2"></i>Permisos y Roles</a></li>
                             {% endif %}
                             {% if tiene_permiso('Permisos', 'p_leer') %}
@@ -115,17 +125,19 @@
                                     </a>
                                 </li>
                             <li><a class="dropdown-item" href="/reportes"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reportes Estadísticos</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('Mantenimiento a la BD', 'p_leer') %}
                             <li><a class="dropdown-item" href="{{ url_for('mantenimiento.vista_mantenimiento') }}"><i class="bi bi-database-fill-gear me-2"></i>Mantenimiento de BD</a></li>
+                            {% endif %}
                         </ul>
                     </li>
+                    {% endif %}
 
-                    <!-- BOTÓN DE PERFIL UNIFICADO -->
                     <li class="nav-item ms-lg-2">
-                        <a class="btn btn-link nav-link text-light d-flex align-items-center" href="{{ url_for('user.perfil') }}" id="navPerfil" role="button">
+                        <a class="btn btn-link nav-link text-light d-flex align-items-center" href="{{ url_for('user.perfil') }}">
                             <i class="bi bi-person-circle fs-5 me-2 text-primary"></i> {{ session['usuario_nombre'] }}
                         </a>
                     </li>
-
                     <li class="nav-item ms-lg-2">
                         <a class="btn btn-outline-warning btn-sm rounded-pill px-3" href="/logout">
                             <i class="bi bi-box-arrow-right"></i> Salir
@@ -134,9 +146,7 @@
 
                 {% else %}
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary btn-sm rounded-pill px-4 ms-lg-2" href="{{ url_for('user.registro') }}">Registro</a>
-                    </li>
+                    <li class="nav-item"><a class="btn btn-primary btn-sm rounded-pill px-4 ms-lg-2" href="{{ url_for('user.registro') }}">Registro</a></li>
                 {% endif %}
             </ul>
         </div>

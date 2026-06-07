@@ -2,7 +2,60 @@
 
 {% block content %}
 <div class="container-fluid mt-4 mb-5">
+<div class="container-fluid mt-4 mb-5">
     <div class="row justify-content-center">
+        <div class="col-xl-11">
+            <div class="card shadow border-0" style="border-radius: 15px;">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-12 bg-primary text-white p-4 text-center" style="border-radius: 15px 15px 0 0;">
+                            <h2 class="fw-bold mb-0"><i class="bi bi-car-front-fill me-2"></i>Registro del Vehículo</h2>
+                            <p class="mb-0 opacity-75">Complete la documentación y los datos técnicos del vehículo</p>
+                        </div>
+
+                        <div class="col-12 p-4 p-md-5">
+                            <form action="{{ url_for('vehiculos.registro') }}" method="POST" enctype="multipart/form-data">
+                                <div class="row g-5">
+                                    <!-- COLUMNA IZQUIERDA: DOCUMENTACIÓN -->
+                                    <div class="col-lg-4 border-end">
+                                        <h4 class="mb-4 text-primary"><i class="bi bi-file-earmark-check me-2"></i>Documentación</h4>
+                                        <hr>
+                                        <div class="row gy-3">
+                                            <div class="col-12 mt-4">
+                                                <label class="form-label fw-bold">Fecha de Ingreso</label>
+                                                <input type="date" name="fecha_ingreso" class="form-control" required>
+                                            </div>
+
+                                            {% set docs = [
+                                                ('original_totalPropiedad', 'Título de Propiedad'),
+                                                ('experticia_transito', 'Experticia de Tránsito'),
+                                                ('certificado_origen', 'Certificado de Origen'),
+                                                ('carnet_circulacion', 'Carnet de Circulación'),
+                                                ('reserva_dominio', 'Reserva de Dominio'),
+                                                ('garantia_vehiculo', 'Garantía del Vehículo'),
+                                                ('certificado_garantia', 'Certificado de Garantía'),
+                                                ('manual_vehiculoGarantia', 'Manual del Vehículo'),
+                                                ('finiquito', 'Finiquito'),
+                                                ('resguardo', 'Resguardo'),
+                                                ('seguro', 'Seguro / Póliza'),
+                                                ('factura_compra', 'Factura de Compra')
+                                            ] %}
+
+                                            {% for field, label in docs %}
+                                            <div class="col-12">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" name="{{ field }}" id="{{ field }}">
+                                                    <label class="form-check-label fw-semibold" for="{{ field }}">{{ label }}</label>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+
+                                            <div class="col-12">
+                                                <label class="form-label fw-bold">Observaciones Extra</label>
+                                                <textarea name="otro_documento" class="form-control" rows="2" placeholder="Detalles adicionales de papeles..."></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
         <div class="col-xl-11">
             <div class="card shadow border-0" style="border-radius: 15px;">
                 <div class="card-body p-0">
@@ -91,6 +144,41 @@
                                                     {% endfor %}
                                                 </select>
                                             </div>
+                                    <!-- COLUMNA DERECHA: DATOS DEL VEHÍCULO -->
+                                    <div class="col-lg-8">
+                                        <h4 class="mb-4 text-primary"><i class="bi bi-info-circle me-2"></i>Detalles Técnicos</h4>
+                                        <hr>
+                                        <div class="row g-4">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Placa</label>
+                                                <input type="text" name="placa" class="form-control form-control-lg" placeholder="ABC-123" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Color</label>
+                                                <input type="text" name="color" class="form-control form-control-lg" placeholder="Ej: Blanco" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Año del Modelo</label>
+                                                <input type="number" name="anio" class="form-control form-control-lg" placeholder="2024" required>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-bold">Kilometraje</label>
+                                                <input type="number" name="kilometraje" class="form-control form-control-lg" placeholder="Ej: 50000" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Tipo de Vehículo</label>
+                                                <input type="text" name="tipo" class="form-control form-control-lg" placeholder="Ej: SUV, Sedán" required>
+                                            </div>
+                                            <!-- SELECT DE MARCA -->
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Marca</label>
+                                                <select name="marca" class="form-select form-control-lg" required>
+                                                    <option value="" selected disabled>Seleccione una marca...</option>
+                                                    {% for marca in marcas %}
+                                                    <option value="{{ marca.cod_marca }}">{{ marca.nombre_marca }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
 
                                             <!-- SELECT DE MODELO -->
                                             <div class="col-md-6">
@@ -129,6 +217,21 @@
                                             </div>
                                         </div>
 
+                                        <div class="row mt-5">
+                                            <div class="col-md-8">
+                                                <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm">
+                                                    <i class="bi bi-check-circle me-2"></i>Finalizar Registro
+                                                </button>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <a href="{{ url_for('vehiculos.lista') }}" class="btn btn-outline-secondary btn-lg w-100">Cancelar</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                                         <div class="row mt-5">
                                             <div class="col-md-8">
                                                 <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm">
