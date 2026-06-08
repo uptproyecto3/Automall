@@ -1,8 +1,8 @@
 import os
 from flask import Blueprint, render_template, request, redirect, flash, url_for
-from models.vehiculo import Vehiculo    
+from models.vehiculo import Vehiculo
+from models.marca import Marca        
 from models.modelo import Modelo      
-from models.marca import Marca      
 from models.proveedor import Proveedor 
 from werkzeug.utils import secure_filename
 from utils.permisos import requiere_permiso
@@ -134,11 +134,8 @@ def editar(placa):
                            modelos=Modelo.obtener_todas(), 
                            proveedores=Proveedor.obtener_todos())
 
-@vehiculos_bp.route('/vehiculos-eliminar/<placa>', methods=['POST'])
-@requiere_permiso('Vehiculos', 'p_eliminar')
-def eliminar(placa):
-    if Vehiculo.eliminar(placa):
-        flash("Vehículo eliminado", "warning")
-    else:
-        flash("No se pudo eliminar el vehículo", "danger")
-    return redirect(url_for('vehiculos.lista'))
+@vehiculos_bp.route('/vehiculos/lista')
+@requiere_permiso('Vehiculos', 'p_leer')
+def lista():
+    vehiculos = Vehiculo.obtener_todos()
+    return render_template('vehiculos/lista.html', vehiculos=vehiculos)

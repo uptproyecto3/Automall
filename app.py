@@ -1,8 +1,8 @@
 from flask import Flask, render_template, session
+from dotenv import load_dotenv
 from models.db import obtener_conexion_seguridad
 from models.catalogo import Catalogo
 
-from dotenv import load_dotenv
 import os
 
 load_dotenv() # Esto lee el archivo .env automáticamente
@@ -16,7 +16,6 @@ from controllers.modelo_controller import modelo_bp
 from controllers.proveedor_controller import proveedor_bp 
 from controllers.venta_controller import ventas_bp 
 from controllers.citas_controller import citas_bp 
-
 from controllers.permisos_controller import permisos_bp
 from controllers.bitacora_controller import bitacora_bp
 from controllers.mantenimientobd_controller import mantenimiento_bp
@@ -31,11 +30,10 @@ app.register_blueprint(catalogo_bp)
 app.register_blueprint(marca_bp)
 app.register_blueprint(modelo_bp)
 app.register_blueprint(proveedor_bp)
-app.register_blueprint(ventas_bp)
 app.register_blueprint(citas_bp)
-
 app.register_blueprint(permisos_bp)
 app.register_blueprint(bitacora_bp)
+app.register_blueprint(ventas_bp)
 app.register_blueprint(mantenimiento_bp)
 
 

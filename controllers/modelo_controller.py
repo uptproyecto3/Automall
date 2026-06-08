@@ -3,9 +3,9 @@ from models.modelo import Modelo
 from models.marca import Marca
 from utils.permisos import requiere_permiso
 
-modelo_bp = Blueprint('modelos', __name__)
+modelo_bp = Blueprint('modelo', __name__)
 
-@modelo_bp.route('/modelos/registro', methods=['GET', 'POST'])
+@modelo_bp.route('/vehiculos/modelo_registro', methods=['GET', 'POST'])
 @requiere_permiso('Vehiculos', 'p_crear')
 def registro_modelo():
     if request.method == 'POST':
