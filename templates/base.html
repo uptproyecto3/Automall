@@ -47,10 +47,10 @@
                                 <li><a class="dropdown-item" href="{{ url_for('vehiculos.lista') }}"><i class="bi bi-cart-plus me-2"></i>Vehículos</a></li>
                             {% endif %}
                             {% if tiene_permiso('Marca', 'p_leer') %}
-                                <li><a class="dropdown-item" href="{{ url_for('marca.registro_marca') }}"><i class="bi bi-cart-plus me-2"></i>Nueva Marca</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('marcas.registro_marca') }}"><i class="bi bi-cart-plus me-2"></i>Nueva Marca</a></li>
                             {% endif %}
                             {% if tiene_permiso('Modelo', 'p_leer') %}
-                                <li><a class="dropdown-item" href="{{ url_for('modelo.registro_modelo') }}"><i class="bi bi-cart-plus me-2"></i>Nuevo Modelo</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('modelos.registro_modelo') }}"><i class="bi bi-cart-plus me-2"></i>Nuevo Modelo</a></li>
                             {% endif %}
                         </ul>
                     </li>
