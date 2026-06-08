@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 05-06-2026 a las 15:50:52
+-- Tiempo de generación: 08-06-2026 a las 04:39:14
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -29,13 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `t_banco_preguntas` (
   `cod_preguntas` int(11) NOT NULL,
-  `nombre_primera_mascota` varchar(50) DEFAULT NULL,
-  `nombre_ciudad_nacimiento` varchar(50) DEFAULT NULL,
-  `nombre_escuela_primaria` varchar(50) DEFAULT NULL,
-  `segundo_nombre_padre` varchar(50) DEFAULT NULL,
-  `primer_juguete_favorito` varchar(50) DEFAULT NULL,
-  `nombre_comida favorita` varchar(50) DEFAULT NULL,
-  `nombre_color_favorito` varchar(50) DEFAULT NULL,
+  `nombre_preguntas` varchar(50) DEFAULT NULL,
   `cedula_usuario` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -174,6 +168,13 @@ CREATE TABLE `t_usuario` (
   `cod_rol` int(11) DEFAULT 3,
   `foto` varchar(255) DEFAULT 'default.png'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `t_usuario`
+--
+
+INSERT INTO `t_usuario` (`cedula_usuario`, `nombre`, `apellido`, `telefono`, `direccion`, `correo`, `password`, `estado`, `cod_rol`, `foto`) VALUES
+('29880513', 'daryeli', 'gutierrez', '', 'villa productiva', 'darye@gmail.com', '12345678', 1, 1, 'default.png');
 
 --
 -- Índices para tablas volcadas

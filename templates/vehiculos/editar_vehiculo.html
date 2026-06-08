@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary text-white p-4">
+            <h2 class="mb-0">Editar Vehículo: {{ v.placa }}</h2>
+        </div>
+        <div class="card-body p-4">
+            <form action="{{ url_for('vehiculos.editar', placa=v.placa) }}" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-4 border-end">
+                        <h5>Documentación</h5>
+                        <input type="date" name="fecha_ingreso" class="form-control mb-3" value="{{ v.fecha_ingreso }}" required>
+                        
+                        {% set docs = [
+                            ('original_totalPropiedad', 'Título de Propiedad'),
+                            ('experticia_transito', 'Experticia de Tránsito'),
+                            ('certificado_origen', 'Certificado de Origen'),
+                            ('carnet_circulacion', 'Carnet de Circulación'),
+                            ('reserva_dominio', 'Reserva de Dominio'),
+                            ('garantia_vehiculo', 'Garantía del Vehículo'),
+                            ('certificado_garantia', 'Certificado de Garantía'),
+                            ('manual_vehiculoGarantia', 'Manual del Vehículo'),
+                            ('finiquito', 'Finiquito'),
+                            ('resguardo', 'Resguardo'),
+                            ('seguro', 'Seguro / Póliza'),
+                            ('factura_compra', 'Factura de Compra')
+                        ] %}
+
+                        {% for field, label in docs %}
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="{{ field }}" id="{{ field }}" 
+                                   {% if v[field] == 1 %}checked{% endif %}>
+                            <label class="form-check-label">{{ label }}</label>
+                        </div>
+                        {% endfor %}
+
+                        <h5 class="mt-4 text-primary"><i class="bi bi-tools me-2"></i>Accesorios</h5>
+                        <hr>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="copia_llaves" id="copia_llaves" 
+                                   {% if v.copia_llaves == 1 %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="copia_llaves">Copia de Llaves</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="repuesto" id="repuesto" 
+                                   {% if v.repuesto == 1 %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="repuesto">Caucho de Repuesto</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="triangulo" id="triangulo" 
+                                   {% if v.triangulo == 1 %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="triangulo">Triángulo de Seguridad</label>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="form-label fw-bold">Observaciones Extra / Otros</label>
+                            <textarea name="otro_documento" class="form-control" rows="3" 
+                                      placeholder="Detalles adicionales...">{{ v.otro_documento }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Detalles Técnicos -->
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold">Placa</label>
+                                <input type="text" name="placa" class="form-control" value="{{ v.placa }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="fw-bold">Color</label>
+                                <input type="text" name="color" class="form-control" value="{{ v.color }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="fw-bold">Año del Modelo</label>
+                                <input type="number" name="anio" class="form-control" value="{{ v.anio }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="fw-bold">Kilometraje</label>
+                                <input type="number" name="kilometraje" class="form-control" value="{{ v.kilometraje }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="fw-bold">Tipo de Vehículo</label>
+                                <input type="text" name="tipo" class="form-control" value="{{ v.tipo }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="fw-bold">Modelo</label>
+                                <select name="modelo" id="select-modelo" class="form-select" required>
+                                    {% for modelo in modelos %}
+                                    <option value="{{ modelo.cod_modelo }}" data-marca="{{ modelo.cod_marca }}"
+                                            {% if v.cod_modelo == modelo.cod_modelo %}selected{% endif %}>
+                                        {{ modelo.nombre_modelo }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="fw-bold">Marca</label>
+                                <select id="select-marca" class="form-select" style="background-color: #e9ecef; pointer-events: none;">
+                                    {% for marca in marcas %}
+                                    <option value="{{ marca.cod_marca }}" {% if v.cod_marca == marca.cod_marca %}selected{% endif %}>
+                                        {{ marca.nombre_marca }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="fw-bold">Estado</label>
+                                <select name="estado" class="form-select">
+                                    <option {% if v.estado == 'Disponible' %}selected{% endif %}>Disponible</option>
+                                    <option {% if v.estado == 'Vendido' %}selected{% endif %}>Vendido</option>
+                                    <option {% if v.estado == 'Mantenimiento' %}selected{% endif %}>Mantenimiento</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-12 mt-3">
+                                <label class="fw-bold">Proveedor (Dueño Anterior)</label>
+                                <select name="cedula" class="form-select" required>
+                                    {% for prov in proveedores %}
+                                    <option value="{{ prov.cedula_proveedor }}" {% if v.cedula_proveedor == prov.cedula_proveedor %}selected{% endif %}>
+                                        {{ prov.razon_social }} (CI: {{ prov.cedula_proveedor }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-12 mt-4">
+                                <label class="form-label fw-bold">Imagen del Vehículo</label>
+                                <div class="card p-3 border-light bg-light">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3 text-center">
+                                            <p class="small text-muted mb-1">Imagen Actual</p>
+                                            {% if v.imagen_url %}
+                                                <img src="{{ url_for('static', filename=v.imagen_url) }}" 
+                                                    class="img-thumbnail shadow-sm" 
+                                                    style="width: 120px; height: 80px; object-fit: cover;"
+                                                    id="img-actual">
+                                            {% else %}
+                                                <div class="bg-secondary text-white rounded p-3 small">Sin Foto</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="col-md-9">
+                                            <label class="form-label small text-primary fw-bold">Subir nueva imagen (opcional)</label>
+                                            <input type="file" name="imagen" class="form-control" accept="image/*" id="input-nueva-img">
+                                            <small class="text-muted">Deje este campo vacío si no desea cambiar la foto actual.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success">Datos de Catálogo</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Precio ($)</label>
+                                        <input type="number" step="0.01" name="precio" class="form-control" value="{{ v.precio }}">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label>Fecha Publicación</label>
+                                        <input type="date" name="fecha_publicacion" class="form-control" value="{{ v.fecha_publicacion }}">
+                                    </div>
+
+                                    <div class="col-md-12 mt-3">
+                                        <label class="fw-bold">Descripción para Catálogo</label>
+                                        <textarea name="descripcion_catalogo" class="form-control" rows="3" required>{{ v.descripcion_catalogo }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5 pt-3 border-top">
+                            <div class="col-md-8">
+                                <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm fw-bold">
+                                    <i class="bi bi-check-circle me-2"></i>Guardar Cambios
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{{ url_for('vehiculos.lista') }}" class="btn btn-outline-secondary btn-lg w-100 fw-bold">
+                                    Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/registro_vehiculo.js') }}?v={{ range(1, 1000) | random }}"></script>
+
+{% endblock %}

@@ -1,95 +1,120 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container mt-4 mb-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary border-bottom pb-2">
-                <i class="bi bi-shop me-2"></i>Catálogo de Vehículos Disponibles
-            </h2>
-            <p class="text-muted">Mostrando unidades listas para la venta en inventario.</p>
-        </div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold">Catálogo de Ventas</h2>
+        <a href="{{ url_for('vehiculos.lista') }}" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Inventario
+        </a>
     </div>
 
-    <div class="row">
-        {% for p in productos %}
-        <!-- Tarjeta tipo Lista (Horizontal) -->
-        <div class="col-12 mb-4">
-            <div class="card shadow-sm border-0 h-100 overflow-hidden" style="border-radius: 15px;">
-                <div class="row g-0">
-                    <!-- Imagen del Carro -->
-                    <div class="col-md-4">
-                        {% if p.imagen_url %}
-                        <img src="{{ url_for('static', filename=p.imagen_url) }}" 
-                             class="img-fluid h-100 w-100" 
-                             style="object-fit: cover; min-height: 250px;" alt="Imagen">
-                        {% else %}
-                        <div class="bg-light d-flex align-items-center justify-content-center h-100" style="min-height: 250px;">
-                            <i class="bi bi-camera text-secondary fs-1"></i>
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Información -->
-                    <div class="col-md-8">
-                        <div class="card-body p-4 d-flex flex-column h-100">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h3 class="card-title fw-bold mb-0 text-uppercase">
-                                        {{ p.nombre_marca }} {{ p.nombre_modelo }}
-                                    </h3>
-                                    <span class="badge bg-secondary">{{ p.anio }}</span>
-                                    <span class="badge bg-info text-dark">{{ p.tipo }}</span>
-                                </div>
-                                <div class="text-end">
-                                    <h2 class="text-success fw-bold mb-0">${{ "{:,.2f}".format(p.precio) }}</h2>
-                                    <small class="text-muted">Publicado: {{ p.fecha_publicacion }}</small>
-                                </div>
-                            </div>
+    <div class="container-fluid mt-4 mb-5 px-0">
+        <div class="card shadow border-0" style="border-radius: 10px;">
+            <div class="card-header bg-dark text-white py-3" style="border-radius: 10px 10px 0 0;">
+                <h5 class="mb-0"><i class="bi bi-shop me-2"></i>Vehículos en Exhibición</h5>
+            </div>
 
-                            <hr>
-
-                            <p class="card-text text-muted flex-grow-1">
-                                {{ p.descripcion or 'Sin descripción adicional disponible.' }}
-                            </p>
-
-                            <div class="row g-2 mb-3 text-center">
-                                <div class="col-4 border-end">
-                                    <small class="d-block text-muted text-uppercase fw-bold">Kilometraje</small>
-                                    <span class="fw-semibold">{{ "{:,}".format(p.kilometraje) }} km</span>
-                                </div>
-                                <div class="col-4 border-end">
-                                    <small class="d-block text-muted text-uppercase fw-bold">Color</small>
-                                    <span class="fw-semibold">{{ p.color }}</span>
-                                </div>
-                                <div class="col-4">
-                                    <small class="d-block text-muted text-uppercase fw-bold">Placa</small>
-                                    <span class="badge bg-dark">{{ p.placa }}</span>
-                                </div>
-                            </div>
-
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button class="btn btn-outline-primary px-4">
-                                    <i class="bi bi-info-circle me-1"></i> Ver Detalles
-                                </button>
-                                <a href="#" class="btn btn-success px-4">
-                                    <i class="bi bi-cart-plus me-1"></i> Iniciar Venta
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-secondary">
+                            <tr>
+                                <th class="ps-4" style="width: 150px;">Imagen</th>
+                                <th>Placa</th>
+                                <th>Marca / Modelo</th>
+                                <th>Año</th>
+                                <th>Precio ($)</th>
+                                <th class="text-center" style="width: 30%;">Descripción Detallada</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in vehiculos %}
+                            <tr>
+                                <td class="ps-4">
+                                    {% if v.imagen_url %}
+                                    <img src="{{ url_for('static', filename=v.imagen_url) }}" 
+                                         class="rounded shadow-sm border" 
+                                         style="width: 100px; height: 70px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="bg-light text-muted rounded text-center d-flex align-items-center justify-content-center border" 
+                                         style="width: 100px; height: 70px;">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-dark px-3">{{ v.placa }}</span></td>
+                                <td>
+                                    <div class="fw-bold">{{ v.nombre_marca }}</div>
+                                    <small class="text-muted">{{ v.nombre_modelo }}</small>
+                                </td>
+                                <td>{{ v.anio }}</td>
+                                <td>
+                                    <span class="fw-bold fs-5">
+                                        ${{ "{:,.2f}".format(v.precio) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        {{ v.descripcion }}
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <!-- Botón para ver más info si lo deseas -->
+                                    <button class="btn btn-sm btn-outline-info" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modalDetalles"
+                                            data-vehiculo='{{ v | tojson }}'>
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="7" class="text-center py-5 text-muted">No hay vehículos disponibles en el catálogo.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        {% else %}
-        <div class="col-12 text-center py-5">
-            <div class="bg-light p-5 rounded-3">
-                <i class="bi bi-emoji-frown fs-1 text-muted"></i>
-                <h4 class="mt-3">No hay vehículos en el catálogo</h4>
-                <p class="text-muted">Asegúrate de que los vehículos tengan un precio registrado en la sección de Catálogo.</p>
-            </div>
-        </div>
-        {% endfor %}
     </div>
 </div>
+
+<!-- MODAL DE DETALLES -->
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-text me-2"></i>Detalles de Venta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBodyContent">
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <h6 class="text-primary fw-bold mb-3">Información General</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr><td><strong>Placa:</strong></td> <td id="det-placa"></td></tr>
+                            <tr><td><strong>Vehículo:</strong></td> <td id="det-vehiculo"></td></tr>
+                            <tr><td><strong>Año:</strong></td> <td id="det-anio"></td></tr>
+                            <tr><td><strong>Estado:</strong></td> <td id="det-estado"></td></tr>
+                            <tr><td><strong>Ingreso:</strong></td> <td id="det-fecha"></td></tr>
+                            <tr><td><strong>Proveedor:</strong></td> <td id="det-prov"></td></tr>
+                        </table> 
+                    </div>
+
+                    <div class="col-md-6">
+                        <h6 class="text-primary fw-bold mb-3">Observaciones</h6>
+                        <small id="det-obs" class="text-muted"></small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/registro_vehiculo.js') }}?v={{ range(1, 1000) | random }}"></script>
+
 {% endblock %}

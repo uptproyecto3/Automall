@@ -1,3 +1,4 @@
+# models/catalogo.py
 from models.db import obtener_conexion
 
 class Catalogo:
@@ -5,18 +6,25 @@ class Catalogo:
     def obtener_disponibles():
         conexion = obtener_conexion()
         cursor = conexion.cursor(dictionary=True)
-        # Traemos datos del vehiculo + catalogo + marca + modelo + imagen
-        # Filtramos solo donde el vehiculo esté 'Disponible'
         sql = """
             SELECT 
-                c.cod_catalogo, c.precio, c.descripcion, c.fecha_publicacion,
-                v.placa, v.color, v.anio, v.kilometraje, v.tipo,
-                m.nombre_marca, mo.nombre_modelo,
-                (SELECT URL FROM imagen WHERE placa = v.placa LIMIT 1) as imagen_url
-            FROM catalogo c
-            JOIN vehiculo v ON c.placa = v.placa
-            JOIN marca m ON v.cod_marca = m.cod_marca
+                v.placa, 
+                v.anio, 
+                v.estado,
+                ma.nombre_marca, 
+                mo.nombre_modelo, 
+                i.URL as imagen_url, 
+                c.precio, 
+                c.descripcion,
+                d.fecha_ingreso,
+                p.razon_social as nombre_proveedor
+            FROM vehiculo v
+            JOIN catalogo c ON v.placa = c.placa
             JOIN modelo mo ON v.cod_modelo = mo.cod_modelo
+            JOIN marca ma ON mo.cod_marca = ma.cod_marca
+            JOIN documentacion d ON v.cod_documento = d.cod_documento
+            JOIN proveedor p ON v.cedula_proveedor = p.cedula_proveedor
+            LEFT JOIN imagen i ON v.placa = i.placa
             WHERE v.estado = 'Disponible'
             ORDER BY c.fecha_publicacion DESC
         """

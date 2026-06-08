@@ -21,9 +21,20 @@ class Marca:
         return marcas
 
     @staticmethod
+    def actualizar(id, nombre, estado): # Nuevo método
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+        sql = "UPDATE marca SET nombre_marca=%s, estado=%s WHERE cod_marca=%s"
+        cursor.execute(sql, (nombre, estado, id))
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+    @staticmethod
     def eliminar(id):
         conexion = obtener_conexion()
         cursor = conexion.cursor()
         cursor.execute("DELETE FROM marca WHERE cod_marca = %s", (id,))
         conexion.commit()
+        cursor.close()
         conexion.close()

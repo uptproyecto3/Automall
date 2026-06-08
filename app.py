@@ -1,5 +1,6 @@
 from flask import Flask, render_template, session
 from models.db import obtener_conexion_seguridad
+from models.catalogo import Catalogo
 
 from dotenv import load_dotenv
 import os
@@ -21,12 +22,12 @@ from controllers.bitacora_controller import bitacora_bp
 from controllers.mantenimientobd_controller import mantenimiento_bp
 
 app = Flask(__name__)
-app.secret_key = '123456789' # Necesario para las sesiones
+app.secret_key = '123456789' 
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(user_bp)
 app.register_blueprint(vehiculos_bp)
-app.register_blueprint(catalogo_bp, url_prefix='/vehiculos')
+app.register_blueprint(catalogo_bp)
 app.register_blueprint(marca_bp)
 app.register_blueprint(modelo_bp)
 app.register_blueprint(proveedor_bp)
@@ -45,7 +46,6 @@ def inject_permisos():
         if 'cod_rol' not in session:
             return False
         
-        # Super Usuario (ID 1) siempre tiene todo
         if session.get('cod_rol') == 1:
             return True
             
@@ -66,20 +66,21 @@ def inject_permisos():
         cursor.execute(sql, (session.get('cod_rol'), modulo))
         res = cursor.fetchone()
         
-        cursor.close()  # Cerramos el cursor
+        cursor.close() 
         conexion.close()
         
         return res and res['permiso'] == 1
         
     return dict(tiene_permiso=tiene_permiso)
 
-# Ruta principal (Landing page)
 @app.route('/')
 def index():
-    return render_template('index.html')
+    todos_disponibles = Catalogo.obtener_disponibles()
+    vehiculos_destacados = todos_disponibles[:6] 
+    
+    return render_template('index.html', vehiculos=vehiculos_destacados)
 
 if __name__ == '__main__':
-    # debug=True permite que el servidor se recargue solo al guardar cambios
     app.run(debug=True)
 
 

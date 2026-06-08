@@ -196,6 +196,10 @@ body {
     color: #aeb9c7;
 }
 
+#modal-v-img:hover {
+    transform: scale(1.05);
+}
+
 /* ==========================================================================
    SECCIÓN: REGISTRO DE VEHICULOS AUTOMALL
    ========================================================================== */
@@ -256,6 +260,23 @@ body {
     padding: 10px;
 }
 
+.card-header-custom {
+    background-color: #212529; /* El color oscuro de Bootstrap */
+    color: #ffffff !important;
+    padding: 15px 20px;
+    border-radius: 10px 10px 0 0 !important; /* Redondea solo las esquinas superiores */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+}
+
+.card-header-custom h5 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: white !important;
+}
 /* ESTILOS PARA EL REGISTRO QUE ESTA EN LA PRINCIPAL REGISTRO DE USUARIOS*/ 
 
 /* ==========================================================================

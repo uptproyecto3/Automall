@@ -12,10 +12,22 @@
                 </div>
                 <div class="card-body p-4">
                     <form action="{{ url_for('modelos.registro_modelo') }}" method="POST">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Marca</label>
+                            <select name="cod_marca" class="form-select" required>
+                                <option value="" disabled selected>Seleccione una marca...</option>
+                                {% for marca in marcas %}
+                                    <option value="{{ marca.cod_marca }}">{{ marca.nombre_marca }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nombre del Modelo</label>
                             <input type="text" name="nombre_modelo" class="form-control" placeholder="Ej: Corolla..." required>
                         </div>
+                        
                         <div class="mb-3">
                             <label class="form-label fw-bold">Estado</label>
                             <select name="estado" class="form-control" required>
@@ -23,6 +35,7 @@
                                 <option value="Inactivo">Inactivo</option>
                             </select>
                         </div>
+                        
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success shadow-sm">
                                 <i class="bi bi-save me-1"></i> Guardar Modelo
@@ -46,7 +59,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
-                                    <th>Nombre</th>
+                                    <th>Marca</th>
+                                    <th>Modelo</th>
+                                    <th>Estado</th> 
                                     <th class="text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -54,12 +69,32 @@
                                 {% for modelo in modelos %}
                                 <tr>
                                     <td><span class="text-muted fw-bold">{{ modelo.cod_modelo }}</span></td>
+                                    <td class="text-primary fw-bold">{{ modelo.nombre_marca }}</td>
                                     <td class="fw-bold text-dark">{{ modelo.nombre_modelo }}</td>
+                                    <td>
+                                        {% if modelo.estado == 'Activo' %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        {% endif %}
+                                    </td>
                                     <td class="text-center">
-                                        <!-- Botón de eliminar (puedes añadir la ruta luego) -->
-                                        <button class="btn btn-sm btn-outline-danger" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
+                                        <!-- BOTÓN EDITAR -->
+                                        <button class="btn btn-sm btn-outline-primary btn-editar" 
+                                            data-id="{{ modelo.cod_modelo }}"
+                                            data-nombre="{{ modelo.nombre_modelo }}"
+                                            data-marca="{{ modelo.cod_marca }}"
+                                            data-estado="{{ modelo.estado }}"
+                                            title="Editar">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
+                                        
+                                        <!-- BOTÓN ELIMINAR  -->
+                                        <form action="{{ url_for('modelos.eliminar_modelo', id=modelo.cod_modelo) }}" method="POST" class="d-inline form-eliminar">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -77,4 +112,46 @@
 
     </div>
 </div>
+
+<!-- MODAL PARA EDITAR MODELO -->
+<div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formEditar" method="POST">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalEditarLabel">Editar Modelo</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Marca</label>
+                        <select name="cod_marca" id="edit_cod_marca" class="form-select" required>
+                            {% for marca in marcas %}
+                                <option value="{{ marca.cod_marca }}">{{ marca.nombre_marca }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre del Modelo</label>
+                        <input type="text" name="nombre_modelo" id="edit_nombre_modelo" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Estado</label>
+                        <select name="estado" id="edit_estado" class="form-select" required>
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/modelo.js') }}"></script>
+
 {% endblock %}

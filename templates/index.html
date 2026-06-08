@@ -1,15 +1,9 @@
 {% extends "base.html" %}
-
 {% block content %}
-<!-- Vincular el archivo de estilos -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-<!-- CARRUSEL MODERNIZADO -->
+<!-- CARRUSEL  -->
 <div id="heroCarousel" class="carousel slide carousel-fade mb-5 shadow" data-bs-ride="carousel">
-    <div class="carousel-indicators">
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
-    </div>
     <div class="carousel-inner">
         <div class="carousel-item active">
             <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1920" class="d-block w-100" alt="Lujo">
@@ -24,15 +18,14 @@
             <div class="carousel-caption">
                 <h1 class="display-3 fw-bold">Potencia y Elegancia</h1>
                 <p class="lead">El rendimiento que buscas con el respaldo de profesionales.</p>
-                <a href="{{ url_for('vehiculos.lista') }}" class="btn btn-outline-light btn-lg rounded-pill px-5">Ver Catálogo</a>
+                <a href="{{ url_for('catalogo.listar') }}" class="btn btn-outline-light btn-lg rounded-pill px-5">Ver Catálogo</a>
             </div>
         </div>
     </div>
 </div>
 
-<!-- BARRA DE BÚSQUEDA MODERNA -->
 <div class="container search-container">
-    <form action="{{ url_for('vehiculos.lista') }}" method="GET" class="search-bar">
+    <form action="{{ url_for('catalogo.listar') }}" method="GET" class="search-bar">
         <i class="bi bi-search"></i>
         <input type="text" name="q" class="form-control" placeholder="Buscar por marca, modelo o año..." aria-label="Buscar">
         <button type="submit" class="btn btn-primary rounded-pill px-4 ms-2">Buscar</button>
@@ -47,41 +40,43 @@
         </div>
     {% endif %}
 
-    <!-- SECCIÓN DE VEHÍCULOS DESTACADOS -->
+    <!-- SECCIÓN DE VEHÍCULOS  -->
     <section class="mt-5 text-center">
         <h2 class="section-title mb-5">Vehículos Destacados</h2>
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            <!-- Cards de ejemplo -->
+            
+            {% for v in vehiculos %}
             <div class="col">
-                <div class="card h-100 card-vehiculo">
-                    <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=600" class="card-img-top" alt="Auto">
+                <div class="card h-100 card-vehiculo border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                    <div class="position-relative">
+                        {% if v.imagen_url %}
+                        <img src="{{ url_for('static', filename=v.imagen_url) }}" class="card-img-top" alt="{{ v.nombre_modelo }}" style="height: 220px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 220px;">
+                            <i class="bi bi-image text-muted fs-1"></i>
+                        </div>
+                        {% endif %}
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-success fs-6 shadow-sm">${{ "{:,.0f}".format(v.precio) }}</span>
+                        </div>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title fw-bold">Sedán Deportivo 2024</h5>
-                        <p class="card-text text-muted small">Elegancia y tecnología en cada kilómetro.</p>
-                        <a href="{{ url_for('vehiculos.lista') }}" class="btn btn-modern">Ver Detalles</a>
+                        <h5 class="card-title fw-bold mb-1">{{ v.nombre_marca }} {{ v.nombre_modelo }}</h5>
+                        <p class="text-primary small mb-2">Año: {{ v.anio }}</p>
+                        <button class="btn btn-modern w-100 mt-2" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalDetalleVenta"
+                                data-vehiculo='{{ v | tojson }}'>
+                            Ver Detalles
+                        </button>
                     </div>
                 </div>
             </div>
-            <div class="col">
-                <div class="card h-100 card-vehiculo">
-                    <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=600" class="card-img-top" alt="SUV">
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold">SUV Familiar Premium</h5>
-                        <p class="card-text text-muted small">Seguridad máxima para toda tu familia.</p>
-                        <a href="{{ url_for('vehiculos.lista') }}" class="btn btn-modern">Ver Detalles</a>
-                    </div>
-                </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted italic">Próximamente más vehículos disponibles...</p>
             </div>
-            <div class="col">
-                <div class="card h-100 card-vehiculo">
-                    <img src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=600" class="card-img-top" alt="Deportivo">
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold">Coupé de Alto Rendimiento</h5>
-                        <p class="card-text text-muted small">Diseñado para los amantes de la velocidad.</p>
-                        <a href="{{ url_for('vehiculos.lista') }}" class="btn btn-modern">Ver Detalles</a>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </section>
 </div>
@@ -109,4 +104,51 @@
         </div>
     </div>
 </div>
+
+<!-- MODAL DETALLE DE VENTA PARA CLIENTES -->
+<div class="modal fade" id="modalDetalleVenta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered"> 
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-body p-0">
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3 bg-white p-2 rounded-circle shadow-sm" data-bs-dismiss="modal"></button>
+                
+                <div class="row g-0">
+                    <div class="col-lg-8 d-none d-lg-block">
+                        <div class="h-100 w-100 bg-light" style="min-height: 550px; overflow: hidden; border-radius: 25px 0 0 25px;">
+                            <img id="modal-v-img" src="" 
+                                 class="w-100 h-100" 
+                                 style="object-fit: cover; display: block; transition: all 0.5s ease;">
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 p-4 p-md-5 d-flex flex-column justify-content-center bg-white" style="border-radius: 0 25px 25px 0;">
+                        <div class="mb-4">
+                            <span id="modal-v-marca" class="text-primary fw-bold text-uppercase ls-wider small"></span>
+                            <h2 id="modal-v-modelo" class="display-5 fw-bold text-dark mt-1"></h2>
+                            <span id="modal-v-anio" class="badge bg-light text-primary border px-3 py-2 rounded-pill mt-2"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 id="modal-v-precio" class="text-success fw-bold display-6 mb-0"></h3>
+                            <p class="text-muted small">Precio Final / Negociable</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark border-bottom pb-2"><i class="bi bi-info-circle me-2"></i>Especificaciones</h6>
+                            <p id="modal-v-desc" class="text-muted" style="font-size: 0.95rem; line-height: 1.6;"></p>
+                        </div>
+
+                        <div class="mt-auto">
+                            <button class="btn btn-primary w-100 btn-lg rounded-pill shadow-sm py-3 fw-bold">
+                                <a href="{{ url_for('citas.agendar') }}" class="text-white text-decoration-none">Agendar Cita</a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/registro_vehiculo.js') }}?v={{ range(1, 1000) | random }}"></script>
 {% endblock %}
