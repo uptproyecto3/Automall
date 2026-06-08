@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 08-06-2026 a las 04:39:14
+-- Tiempo de generación: 08-06-2026 a las 18:06:58
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -29,9 +29,21 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `t_banco_preguntas` (
   `cod_preguntas` int(11) NOT NULL,
-  `nombre_preguntas` varchar(50) DEFAULT NULL,
-  `cedula_usuario` varchar(20) NOT NULL
+  `nombre_preguntas` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `t_banco_preguntas`
+--
+
+INSERT INTO `t_banco_preguntas` (`cod_preguntas`, `nombre_preguntas`) VALUES
+(1, '¿Nombre de mi primera mascota?'),
+(2, '¿Nombre de mi ciudad de nacimiento?'),
+(3, '¿Nombre de mi escuela primaria?'),
+(4, '¿Segundo nombre de mi padre?'),
+(5, '¿Nombre de mi primer juguete favorito?'),
+(6, '¿Nombre de mi comida favorita?'),
+(7, '¿Nombre de mi color favorito?');
 
 -- --------------------------------------------------------
 
@@ -165,16 +177,34 @@ CREATE TABLE `t_usuario` (
   `correo` varchar(50) NOT NULL,
   `password` varchar(160) NOT NULL,
   `estado` int(11) NOT NULL DEFAULT 1,
-  `cod_rol` int(11) DEFAULT 3,
-  `foto` varchar(255) DEFAULT 'default.png'
+  `cod_rol` int(11) DEFAULT 5,
+  `foto` varchar(255) DEFAULT 'default.png',
+  `cod_preguntas` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `t_usuario`
 --
 
-INSERT INTO `t_usuario` (`cedula_usuario`, `nombre`, `apellido`, `telefono`, `direccion`, `correo`, `password`, `estado`, `cod_rol`, `foto`) VALUES
-('29880513', 'daryeli', 'gutierrez', '', 'villa productiva', 'darye@gmail.com', '12345678', 1, 1, 'default.png');
+INSERT INTO `t_usuario` (`cedula_usuario`, `nombre`, `apellido`, `telefono`, `direccion`, `correo`, `password`, `estado`, `cod_rol`, `foto`, `cod_preguntas`) VALUES
+('../../../../../../..', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('..\\..\\..\\..\\..\\..\\..', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('/', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('/etc/passwd', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('/registro', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('/WEB-INF/web.xml', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('29880513', 'daryeli', 'gutierrez', '', 'villa productiva', 'darye@gmail.com', '12345678', 1, 1, 'default.png', NULL),
+('c:/', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('c:/Windows/system.in', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('c:\\', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('c:\\Windows\\system.in', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('registro', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('thishouldnotexistand', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('WEB-INF/web.xml', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('WEB-INF\\web.xml', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('ZAP', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('\\registro', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL),
+('\\WEB-INF\\web.xml', 'ZAP', 'ZAP', '9999999999', 'ZAP', 'zaproxy@example.com', 'ZAP', 1, 3, 'default.png', NULL);
 
 --
 -- Índices para tablas volcadas
@@ -184,8 +214,7 @@ INSERT INTO `t_usuario` (`cedula_usuario`, `nombre`, `apellido`, `telefono`, `di
 -- Indices de la tabla `t_banco_preguntas`
 --
 ALTER TABLE `t_banco_preguntas`
-  ADD PRIMARY KEY (`cod_preguntas`),
-  ADD UNIQUE KEY `cedula_usuario` (`cedula_usuario`);
+  ADD PRIMARY KEY (`cod_preguntas`);
 
 --
 -- Indices de la tabla `t_bitacora`
@@ -233,6 +262,7 @@ ALTER TABLE `t_rol`
 --
 ALTER TABLE `t_usuario`
   ADD PRIMARY KEY (`cedula_usuario`),
+  ADD UNIQUE KEY `cod_preguntas` (`cod_preguntas`),
   ADD KEY `cod_rol` (`cod_rol`);
 
 --
@@ -243,7 +273,7 @@ ALTER TABLE `t_usuario`
 -- AUTO_INCREMENT de la tabla `t_banco_preguntas`
 --
 ALTER TABLE `t_banco_preguntas`
-  MODIFY `cod_preguntas` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `cod_preguntas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `t_bitacora`
@@ -286,12 +316,6 @@ ALTER TABLE `t_rol`
 --
 
 --
--- Filtros para la tabla `t_banco_preguntas`
---
-ALTER TABLE `t_banco_preguntas`
-  ADD CONSTRAINT `t_banco_preguntas_ibfk_1` FOREIGN KEY (`cedula_usuario`) REFERENCES `t_usuario` (`cedula_usuario`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
 -- Filtros para la tabla `t_bitacora`
 --
 ALTER TABLE `t_bitacora`
@@ -320,7 +344,8 @@ ALTER TABLE `t_personal`
 -- Filtros para la tabla `t_usuario`
 --
 ALTER TABLE `t_usuario`
-  ADD CONSTRAINT `t_usuario_ibfk_1` FOREIGN KEY (`cod_rol`) REFERENCES `t_rol` (`cod_rol`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `t_usuario_ibfk_1` FOREIGN KEY (`cod_rol`) REFERENCES `t_rol` (`cod_rol`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `t_usuario_ibfk_2` FOREIGN KEY (`cod_preguntas`) REFERENCES `t_banco_preguntas` (`cod_preguntas`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

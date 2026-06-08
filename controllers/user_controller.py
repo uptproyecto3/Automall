@@ -1,11 +1,10 @@
 import os
 from werkzeug.utils import secure_filename
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from models.user import Usuario
+from models.user import Usuario # El modelo se llama user.py
 from utils.decorators import login_required
 from utils.permisos import requiere_permiso
 from models.bitacora import Bitacora 
-
 
 user_bp = Blueprint('user', __name__) 
 
@@ -14,10 +13,7 @@ user_bp = Blueprint('user', __name__)
 @user_bp.route('/perfil')
 @login_required
 def perfil():
-    # Buscamos la cédula directamente del objeto session
     cedula_usuario = session.get('cedula_usuario')
-    
-    # Buscamos al usuario en la BD usando un método del modelo
     usuario_info = Usuario.obtener_por_cedula(cedula_usuario)
     
     if not usuario_info:
@@ -29,38 +25,44 @@ def perfil():
 @user_bp.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
-        # 1. Manejar el archivo de la foto
+        # 1. Recoger datos del formulario
+        cedula = request.form.get('cedula')
+        nombre = request.form.get('nombre')
+        apellido = request.form.get('apellido')
+        telefono = request.form.get('telefono')
+        direccion = request.form.get('direccion')
+        correo = request.form.get('email')
+        password = request.form.get('password')
+        
+        # 2. Manejar la foto (Nombre temporal por si no suben nada)
         foto = request.files.get('foto_perfil')
-        nombre_foto = "default.png" # Foto por defecto si no suben nada
-        
-        if foto and foto.filename != '':
-            # 1. Extraemos la extensión del archivo original (ej: .jpg)
-            # Todo este bloque debe llevar 8 espacios (o 2 tabs) de indentación
-            extension = os.path.splitext(foto.filename)[1]
-            
-            # 2. Creamos el nuevo nombre usando solo la cédula y la extensión
-            cedula = request.form['cedula']
-            nombre_foto = secure_filename(f"{cedula}{extension}")
-            
-            # 3. Definimos la ruta y guardamos
-            ruta_guardado = os.path.join('static', 'uploads', 'perfiles', nombre_foto)
-            foto.save(ruta_guardado)
-    
-        # 2. Crear usuario incluyendo la foto (Fuera del if de la foto, pero dentro del POST)
+        nombre_foto = "default.png"
+
+        # 3. Creamos la instancia del usuario
         nuevo_usuario = Usuario(
-            request.form['cedula'],
-            request.form['nombre'],
-            request.form['apellido'],
-            request.form['telefono'],
-            request.form['direccion'],
-            request.form['email'],
-            request.form['password'],
-            nombre_foto 
+            cedula, nombre, apellido, telefono, direccion, correo, password, nombre_foto
         )
-        nuevo_usuario.guardar()
-        
-        flash("¡Registro exitoso! Ya puedes iniciar sesión.")
-        return redirect(url_for('auth.login'))
+
+        # 4. Intentamos guardar (El modelo ejecuta todas las validaciones de utils)
+        resultado = nuevo_usuario.guardar()
+
+        if resultado['status']:
+            # Si el registro fue exitoso en la BD, procedemos a guardar la foto física
+            if foto and foto.filename != '':
+                extension = os.path.splitext(foto.filename)[1]
+                nombre_foto = secure_filename(f"{cedula}{extension}")
+                ruta_guardado = os.path.join('static', 'uploads', 'perfiles', nombre_foto)
+                foto.save(ruta_guardado)
+                
+                # Opcional: Actualizar el nombre de la foto en la BD si cambió del default
+                # (Aunque en el constructor ya se pasó el nombre, aquí podrías hacer un update rápido si fuera necesario)
+
+            flash(resultado['mensaje'], "success")
+            return redirect(url_for('auth.login'))
+        else:
+            # Si hubo error de validación (cédula repetida, clave débil, etc.)
+            flash(resultado['mensaje'], "danger")
+            return render_template('usuarios/registro.html')
         
     return render_template('usuarios/registro.html')
 
@@ -75,27 +77,35 @@ def listar():
 
 @user_bp.route('/usuarios/eliminar/<int:cedula_usuario>')
 @login_required
-@requiere_permiso('Usuarios', 'p_eliminar') # <--- Si no tiene p_eliminar=1 en la BD, no entra
+@requiere_permiso('Usuarios', 'p_eliminar')
 def eliminar(cedula_usuario):
-    Usuario.eliminar(cedula_usuario)
-    Bitacora.registrar(session['cedula_usuario'], f"Eliminó el Usuario cedula_usuario: {cedula_usuario}", "Usuarios")
+    exito = Usuario.eliminar(cedula_usuario)
+    if exito:
+        Bitacora.registrar(session['cedula_usuario'], f"Eliminó lógicamente al Usuario: {cedula_usuario}", "Usuarios")
+        flash("Usuario eliminado correctamente.", "success")
+    else:
+        flash("Error al intentar eliminar el usuario.", "danger")
     return redirect(url_for('user.listar'))
 
 @user_bp.route('/usuarios/editar/<int:cedula_usuario>', methods=['POST'])
 @login_required
 @requiere_permiso('Usuarios', 'p_actualizar')
 def editar(cedula_usuario):
-    # Ya no extraemos ni enviamos la cédula para no alterar sus relaciones en cascada
-    Usuario.actualizar(
+    # Llamamos al método actualizar que ahora devuelve un diccionario de estatus
+    resultado = Usuario.actualizar(
         cedula_usuario,
-        request.form['nombre'],
-        request.form['apellido'],
-        request.form['telefono'],
-        request.form['direccion'],
-        request.form['email']
+        request.form.get('nombre'),
+        request.form.get('apellido'),
+        request.form.get('telefono'),
+        request.form.get('direccion'),
+        request.form.get('email')
     )
     
-    flash("Usuario actualizado correctamente.")
-    Bitacora.registrar(session['cedula_usuario'], f"Actualizo al Usuario ID: {cedula_usuario}", "Usuarios")
+    if resultado['status']:
+        flash(resultado['mensaje'], "success")
+        Bitacora.registrar(session['cedula_usuario'], f"Actualizó al Usuario ID: {cedula_usuario}", "Usuarios")
+    else:
+        # Aquí se mostrarán los errores de validación de formato o correo duplicado
+        flash(resultado['mensaje'], "danger")
+        
     return redirect(url_for('user.listar'))
-

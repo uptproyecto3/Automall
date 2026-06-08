@@ -6,6 +6,7 @@ from models.marca import Marca
 from models.proveedor import Proveedor 
 from werkzeug.utils import secure_filename
 from utils.permisos import requiere_permiso
+from flask import jsonify
 
 vehiculos_bp = Blueprint('vehiculos', __name__)
 
@@ -63,16 +64,21 @@ def registro():
             }
             
             if Vehiculo.guardar_con_documentos(v_data, d_data, a_data, c_data, filename):
-                flash("¡Vehículo y Catálogo registrados con éxito!", "success")
-                return redirect(url_for('vehiculos.lista'))
+                # IMPORTANTE: Devolvemos JSON, no Redirect
+                return jsonify({"status": "success", "message": "¡Vehículo y Catálogo registrados con éxito!"}), 200
             else:
-                flash("Error al registrar en la base de datos.", "danger")
+                return jsonify({"status": "error", "message": "Error al registrar en la base de datos."}), 400
+
         except Exception as e:
             print(f"Error en controlador: {e}")
-            flash("Error de sistema.", "danger")
+            # Aquí se enviará el mensaje de "Placa Duplicada" que definiste en el modelo
+            return jsonify({"status": "error", "message": str(e)}), 400
 
-    return render_template('vehiculos/registro.html', marcas=Marca.obtener_todas(), modelos=Modelo.obtener_todas(), proveedores=Proveedor.obtener_todos())
-
+    return render_template('vehiculos/registro.html', 
+                           marcas=Marca.obtener_todas(), 
+                           modelos=Modelo.obtener_todas(), 
+                           proveedores=Proveedor.obtener_todos())
+                           
 @vehiculos_bp.route('/vehiculos-editar/<placa>', methods=['GET', 'POST'])
 @requiere_permiso('Vehiculos', 'p_actualizar')
 def editar(placa):

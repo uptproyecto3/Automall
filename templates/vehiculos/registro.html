@@ -101,7 +101,13 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label fw-bold">Tipo de Vehículo</label>
-                                            <input type="text" name="tipo" class="form-control form-control-lg" placeholder="Ej: SUV, Sedán" required>
+                                            <select name="tipo" class="form-select form-control-lg" required>
+                                                <option value="" selected disabled>Seleccione un Tipo...</option>
+                                                <option value="SUV">SUV</option>
+                                                <option value="Sedán">Sedán</option>
+                                                <option value="Hatchback">Hatchback</option>
+                                                <option value="Pick-up">Pick-up</option>
+                                            </select>
                                         </div>
                                         
                                         <div class="col-md-6">
@@ -129,6 +135,7 @@
                                         <div class="col-md-6">
                                             <label class="form-label fw-bold">Estado Inicial</label>
                                             <select name="estado" class="form-select form-control-lg" required>
+                                                <option value="" selected disabled>Seleccione un estado...</option>
                                                 <option value="Disponible">Disponible</option>
                                                 <option value="Vendido">Vendido</option>
                                                 <option value="Mantenimiento">Mantenimiento</option>
@@ -192,6 +199,8 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ url_for('static', filename='js/registro_vehiculo.js') }}?v={{ range(1, 1000) | random }}"></script>
+<script src="{{ url_for('static', filename='js/validacion_vehiculo.js') }}?v={{ range(1, 1000) | random }}"></script>
 
 {% endblock %}

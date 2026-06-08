@@ -1,5 +1,6 @@
 from models.db import obtener_conexion 
 from datetime import date 
+from mysql.connector import Error
 
 class Vehiculo:
     @staticmethod
@@ -62,10 +63,14 @@ class Vehiculo:
             
             conexion.commit()
             return True
-        except Exception as e:
+        except Error as e: # <--- CAMBIAR Exception por Error
             conexion.rollback()
             print(f"ERROR DB: {e}")
-            return False
+            # El código 1062 es "Duplicate entry" (Placa ya existe)
+            if e.errno == 1062:
+                raise Exception("La placa ingresada ya se encuentra registrada en el sistema.")
+            else:
+                raise Exception(f"Error en la base de datos: {str(e)}")
         finally:
             cursor.close()
             conexion.close()
