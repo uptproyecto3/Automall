@@ -84,8 +84,9 @@ class ValidacionUsuario:
         err_cedula = cls.validar_cedula_formato(datos.get('cedula'))
         if err_cedula: errores['cedula'] = err_cedula
 
+        # Añadimos # nosec B105 para indicarle a Bandit que esto no es una credencial en duro
         if len(datos.get('password', '')) < 6:
-            errores['password'] = "La contraseña debe tener al menos 6 caracteres."
+            errores['password'] = "La contraseña debe tener al menos 6 caracteres." # nosec B105
 
         # Si no hay errores de formato, verificar unicidad en BD
         if not errores:

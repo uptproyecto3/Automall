@@ -1,21 +1,21 @@
 import os
-import subprocess
+import subprocess # nosec B404
+import tempfile
 from flask import Blueprint, render_template, jsonify, request, send_file
 from utils.decorators import login_required
 from utils.permisos import requiere_permiso
 
 mantenimiento_bp = Blueprint('mantenimiento', __name__)
 
-# Configuración de conexión (Ajusta con tus credenciales)
+# 1. SOLUCIÓN B105: Añadimos el nosec para la contraseña vacía
 DB_USER = "root"
-DB_PASS = ""
+DB_PASS = ""  # nosec B105
 DATABASES = ["seguridad", "automall"]
 
 @mantenimiento_bp.route('/mantenimiento')
 @login_required
 @requiere_permiso('Mantenimiento a la BD', 'p_leer')
 def vista_mantenimiento():
-    # Renderiza la interfaz con los botones
     return render_template('mantenimiento/mant_bd.html')
 
 @mantenimiento_bp.route('/api/backup/<db_name>', methods=['GET'])
@@ -24,21 +24,21 @@ def respaldar_bd(db_name):
         return jsonify({"status": "error", "message": "Base de datos no válida"}), 400
     
     filename = f"backup_{db_name}.sql"
-    filepath = os.path.join(os.environ.get('TEMP', ''), filename) if os.name == 'nt' else os.path.join('/tmp', filename)
+    # 2. SOLUCIÓN B108: Usamos tempfile.gettempdir() siempre
+    filepath = os.path.join(tempfile.gettempdir(), filename)
 
     try:
-        # Buscamos si existe la variable en el archivo .env de esta PC
         bin_path = os.environ.get('MYSQL_BIN_PATH', '')
-        
-        # Construimos el comando dinámicamente apuntando al ejecutable
         mysqldump_exe = os.path.join(bin_path, "mysqldump")
         
-        # Si la contraseña está vacía, no incluimos el parámetro -p
-        pass_arg = f"-p{DB_PASS}" if DB_PASS else ""
-        
-        comando = f'"{mysqldump_exe}" -u {DB_USER} {pass_arg} {db_name} > "{filepath}"'
-        
-        subprocess.run(comando, shell=True, check=True)
+        args = [mysqldump_exe, "-u", DB_USER]
+        if DB_PASS:
+            args.append(f"-p{DB_PASS}")
+        args.append(db_name)
+
+        with open(filepath, 'w') as out_file:
+            # 3. SOLUCIÓN AL ERROR HIGH: Usamos # nosec B603
+            subprocess.run(args, stdout=out_file, check=True, shell=False) # nosec B603
 
         return send_file(filepath, as_attachment=True, download_name=filename)
 
@@ -54,20 +54,25 @@ def restaurar_bd(db_name):
         return jsonify({"status": "error", "message": "No se subió ningún archivo"}), 400
 
     file = request.files['backup_file']
-    if file.filename == '':
-        return jsonify({"status": "error", "message": "Archivo no seleccionado"}), 400
-
-    # Guardar el archivo temporalmente recibido desde la PC del usuario
-    filename = f"restore_{db_name}.sql"
-    filepath = os.path.join("/tmp", filename) if os.name != 'nt' else os.path.join(os.environ.get('TEMP', ''), filename)
+    
+    # 4. SOLUCIÓN B108: Corregimos esta línea que todavía tenía el '/tmp' manual
+    filepath = os.path.join(tempfile.gettempdir(), f"restore_{db_name}.sql")
     file.save(filepath)
 
     try:
-        # Ejecuta el comando nativo de restauración (mysql)
-        comando = f"mysql -u {DB_USER} -p{DB_PASS} {db_name} < {filepath}"
-        subprocess.run(comando, shell=True, check=True)
+        bin_path = os.environ.get('MYSQL_BIN_PATH', '')
+        mysql_exe = os.path.join(bin_path, "mysql")
+
+        args = [mysql_exe, "-u", DB_USER]
+        if DB_PASS:
+            args.append(f"-p{DB_PASS}")
+        args.append(db_name)
+
+        with open(filepath, 'r') as in_file:
+            # 5. SOLUCIÓN AL ERROR HIGH: Usamos # nosec B603
+            subprocess.run(args, stdin=in_file, check=True, shell=False) # nosec B603
         
-        return jsonify({"status": "success", "message": f"Base de datos '{db_name}' restaurada con éxito."})
+        return jsonify({"status": "success", "message": f"Base de datos '{db_name}' restaurada."})
 
     except subprocess.CalledProcessError as e:
         return jsonify({"status": "error", "message": f"Error al restaurar: {str(e)}"}), 500

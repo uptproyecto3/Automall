@@ -11,26 +11,31 @@ def requiere_permiso(modulo, tipo_permiso):
             if not cod_rol: 
                 return redirect(url_for('auth.login'))
             
-            # Validación de seguridad para evitar que 'tipo_permiso' llegue vacío
-            if not tipo_permiso or tipo_permiso.strip() == "":
-                flash("Error interno: Tipo de permiso no especificado.")
-                return redirect(url_for('index'))
+            # --- MEJORA DE SEGURIDAD PARA BANDIT ---
+            # Definimos qué columnas son permitidas en la base de datos
+            permisos_validos = ['p_crear', 'p_eliminar', 'p_actualizar', 'p_leer'] # Ajusta según tus nombres reales de columnas
             
+            if tipo_permiso not in permisos_validos:
+                flash("Error de seguridad: Permiso no reconocido.")
+                return redirect(url_for('index'))
+            # ---------------------------------------
+
             conexion = obtener_conexion_seguridad()
             cursor = conexion.cursor(dictionary=True)
             
-            # Usamos f-string limpio. Nota que inyectamos el nombre de la columna rp.{}
+            # Al usar la lista blanca arriba, este f-string ya es seguro.
+            # Usamos # nosec para que Bandit sepa que lo hemos revisado manualmente.
             sql = f"""
                 SELECT rp.{tipo_permiso} as tiene_permiso 
                 FROM t_permiso_rol_modulo rp 
                 JOIN t_modulo m ON rp.cod_modulo = m.cod_modulo 
                 WHERE rp.cod_rol = %s AND m.nombre_modulo = %s
-            """
+            """ # nosec B608
             
             cursor.execute(sql, (cod_rol, modulo))
             res = cursor.fetchone()
             
-            cursor.close()  # Cerramos siempre el cursor
+            cursor.close()
             conexion.close()
             
             if res and res['tiene_permiso'] == 1:
@@ -40,6 +45,7 @@ def requiere_permiso(modulo, tipo_permiso):
                 return redirect(url_for('index'))
         return wrapper
     return decorador
+
 
 # Decorador específico para Super Usuario (ID 1)
 def requiere_superusuario(f):

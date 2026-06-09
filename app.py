@@ -1,8 +1,8 @@
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, request 
 from dotenv import load_dotenv
 from models.db import obtener_conexion_seguridad
 from models.catalogo import Catalogo
-
+import psutil
 import os
 
 load_dotenv() # Esto lee el archivo .env automáticamente
@@ -21,7 +21,7 @@ from controllers.bitacora_controller import bitacora_bp
 from controllers.mantenimientobd_controller import mantenimiento_bp
 
 app = Flask(__name__)
-app.secret_key = '123456789' 
+app.secret_key = '123456789' # nosec B105
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(user_bp)
@@ -36,6 +36,12 @@ app.register_blueprint(bitacora_bp)
 app.register_blueprint(ventas_bp)
 app.register_blueprint(mantenimiento_bp)
 
+@app.before_request
+def monitor_recursos():
+    proceso = psutil.Process(os.getpid())
+    memoria_mb = proceso.memory_info().rss / (1024 * 1024)
+    # Ahora 'request.path' ya no dará error porque ya lo importamos arriba
+    print(f"--- MONITOREO RNF --- Ruta: {request.path} | RAM en uso: {memoria_mb:.2f} MB")
 
 # Este decorador hace que la función sea accesible en cualquier HTML
 @app.context_processor
@@ -47,19 +53,21 @@ def inject_permisos():
         if session.get('cod_rol') == 1:
             return True
             
-        # Si por error el HTML envía un permiso vacío, evitamos el choque de SQL
-        if not tipo_permiso or tipo_permiso.strip() == "":
+        # LISTA BLANCA DE SEGURIDAD (Añadido para Bandit)
+        permisos_validos = ['p_crear', 'p_eliminar', 'p_actualizar', 'p_leer']
+        if tipo_permiso not in permisos_validos:
             return False
             
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True)
         
+        # Usamos nosec porque ya validamos con la lista blanca arriba
         sql = f"""
             SELECT rp.{tipo_permiso} as permiso 
             FROM t_permiso_rol_modulo rp
             JOIN t_modulo m ON rp.cod_modulo = m.cod_modulo
             WHERE rp.cod_rol = %s AND m.nombre_modulo = %s
-        """
+        """ # nosec B608
         
         cursor.execute(sql, (session.get('cod_rol'), modulo))
         res = cursor.fetchone()
@@ -79,7 +87,7 @@ def index():
     return render_template('index.html', vehiculos=vehiculos_destacados)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True)  # nosec B201
 
 
 

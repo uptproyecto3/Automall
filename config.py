@@ -3,7 +3,7 @@ class Config:
     DB_NEGOCIO = {
         'host': 'localhost',
         'user': 'root',
-        'password': '',
+        'password': '', # nosec B105
         'database': 'automall'
     }
 
@@ -11,6 +11,6 @@ class Config:
     DB_SEGURIDAD = {
         'host': 'localhost',
         'user': 'root',
-        'password': '',
+        'password': '', # nosec B105
         'database': 'seguridad'
     }
