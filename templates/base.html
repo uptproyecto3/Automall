@@ -31,7 +31,7 @@
                 {% if 'usuario_nombre' in session %}
                     
                     {# DROPDOWN: OPERACIONES #}
-                    {% if tiene_permiso('Catálogo', 'p_leer') or tiene_permiso('Vehículos', 'p_leer') or tiene_permiso('Marca', 'p_leer') or tiene_permiso('Modelo', 'p_leer') %}
+                    {% if tiene_permiso('Catalogo', 'p_leer') or tiene_permiso('Vehiculos', 'p_leer') or tiene_permiso('Marca', 'p_leer') or tiene_permiso('Modelo', 'p_leer') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navOperaciones" role="button" data-bs-toggle="dropdown">
                             Operaciones
@@ -57,21 +57,22 @@
                     {% endif %}
 
                     {# DROPDOWN: MANTENIMIENTO #}
-                    {% if tiene_permiso('Mantenimiento', 'p_leer') or tiene_permiso('Servicios', 'p_leer') or tiene_permiso('Taller', 'p_leer') or tiene_permiso('Compras', 'p_leer') or tiene_permiso('Insumos', 'p_leer') %}
+                    {% if tiene_permiso('Mantenimiento', 'p_leer') or tiene_permiso('Servicios', 'p_leer') or tiene_permiso('Taller', 'p_leer') or tiene_permiso('Compras', 'p_leer') or tiene_permiso('Insumos', 'p_leer') or tiene_permiso('mantenimiento_operacional', 'p_leer') or tiene_permiso('servicios', 'p_leer') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navMantenimiento" role="button" data-bs-toggle="dropdown">
                             Mantenimiento
                         </a>
                         <ul class="dropdown-menu shadow border-0">
                             <li><h6 class="dropdown-header">Control de Mantenimiento</h6></li>
-                            {% if tiene_permiso('Mantenimiento', 'p_leer') %}
-                                <li><a class="dropdown-item" href="/mantenimiento"><i class="bi bi-calendar-event me-2"></i>Gestionar Mantenimiento</a></li>
-                            {% endif %}
-                            {% if tiene_permiso('Servicios', 'p_leer') %}
-                                <li><a class="dropdown-item" href="/servicios"><i class="bi bi-cash-stack me-2"></i>Gestionar Servicios</a></li>
-                            {% endif %}
+                           
                             {% if tiene_permiso('Taller', 'p_leer') %}
-                                <li><a class="dropdown-item" href="/taller"><i class="bi bi-calendar-event me-2"></i>Taller de Vehículos</a></li>
+                                <li><a class="dropdown-item" href="/taller"><i class="bi bi-tools me-2"></i>Gestionar taller de Vehículos</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('mantenimiento_operacional', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('mantenimiento_operacional.listar_mantenimiento') }}"><i class="bi bi-wrench-adjustable me-2"></i>Gestionar Mantenimiento Operacional</a></li>
+                            {% endif %}
+                            {% if tiene_permiso('servicios', 'p_leer') %}
+                                <li><a class="dropdown-item" href="{{ url_for('servicios.listar_servicios') }}"><i class="bi bi-car-front-fill me-2"></i>Gestionar Servicios</a></li>
                             {% endif %}
                             
                             <li><h6 class="dropdown-header">Control de Compras</h6></li>

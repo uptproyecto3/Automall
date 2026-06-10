@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">Servicios</h2>
+            <p class="text-muted mb-0">Control de servicios estéticos y de limpieza para vehículos.</p>
+        </div>
+
+
+        <div class="d-flex gap-2 flex-wrap">
+            {% if tiene_permiso('servicios', 'p_crear') %}
+            <a href="{{ url_for('servicios.crear_servicio') }}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-plus-circle me-2"></i>Nuevo Servicio
+            </a>
+            {% endif %}
+
+
+            {% if tiene_permiso('servicios', 'p_leer') %}
+            <button type="button" class="btn btn-success rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalReporteServicios">
+                <i class="bi bi-file-earmark-text me-2"></i>Reporte
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tablaServicios" class="table table-hover align-middle text-center mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Código</th>
+                            <th>Servicio</th>
+                            <th>Estado</th>
+                            <th>Costo($)</th>
+                            <th>Descripción</th>
+                            <th>Placa</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in servicios %}
+                        <tr>
+                            <td>{{ s.cod_servicios }}</td>
+                            <td class="text-start">{{ s.nombre_servicio }}</td>
+                            <td>
+                                {% if s.estado == 'Activo' %}
+                                    <span class="badge bg-warning text-dark">Activo</span>
+                                {% elif s.estado == 'Finalizado' %}
+                                    <span class="badge bg-success">Finalizado</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ s.estado }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ s.costo if s.costo else '-' }}</td>
+                            <td class="text-start">{{ s.descripcion_especifica if s.descripcion_especifica else '-' }}</td>
+                            <td>{{ s.placa if s.placa else '-' }}</td>
+                            <td>
+                                <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                    {% if tiene_permiso('servicios', 'p_actualizar') and s.estado == 'Activo' %}
+                                    <a href="{{ url_for('servicios.editar_servicio', cod_servicios=s.cod_servicios) }}" class="btn btn-primary btn-sm">
+                                        Editar
+                                    </a>
+                                    {% endif %}
+
+
+                                    {% if tiene_permiso('servicios', 'p_eliminar') and s.estado == 'Activo' %}
+                                    <form action="{{ url_for('servicios.inactivar_servicio', cod_servicios=s.cod_servicios) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Deseas inactivar este servicio?');">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                    {% endif %}
+
+
+                                    {% if s.estado == 'Activo' and s.placa and tiene_permiso('servicios', 'p_actualizar') %}
+                                    <form action="{{ url_for('servicios.finalizar_servicio', cod_servicios=s.cod_servicios, placa=s.placa) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Deseas finalizar este servicio y reactivar el vehículo?');">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            Finalizar
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                        <span class="text-muted">Sin acciones</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+
+                {% if servicios|length == 0 %}
+                <p class="text-center text-muted py-4 mb-0">No hay servicios registrados.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% if tiene_permiso('servicios', 'p_leer') %}
+<div class="modal fade" id="modalReporteServicios" tabindex="-1" aria-labelledby="modalReporteServiciosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalReporteServiciosLabel">Reporte de Servicios</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+
+            <div class="modal-body">
+                <form action="{{ url_for('reporte_servicios.generar_reporte_servicios') }}" method="GET" target="_blank">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cod_servicio" class="form-label">Código de Servicio:</label>
+                            <input type="number" class="form-control" id="cod_servicio" name="cod_servicio" placeholder="Ej: 1">
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre_servicio" class="form-label">Servicio:</label>
+                            <input type="text" class="form-control" id="nombre_servicio" name="nombre_servicio" placeholder="Ej: Cambio de aceite">
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="estado" class="form-label">Estado:</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="">-- Todos --</option>
+                                <option value="Activo">Activo</option>
+                                <option value="Finalizado">Finalizado</option>
+                            </select>
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+                            <label for="placa" class="form-label">Placa:</label>
+                            <select class="form-select" id="placa" name="placa">
+                                <option value="">-- Todos los vehículos --</option>
+                                {% for v in vehiculos %}
+                                <option value="{{ v.placa }}">{{ v.placa }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="submit" name="accion" value="ver" class="btn btn-outline-primary">
+                            Imprimir
+                        </button>
+                        <button type="submit" name="accion" value="descargar" class="btn btn-success">
+                            Descargar Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('static', filename='js/validar_servicios.js') }}"></script>
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <script>
+            Swal.fire({
+                icon: "{{ 'error' if category == 'danger' else category }}",
+                title: "{{ 'Error' if category == 'danger' else category|capitalize }}",
+                text: "{{ message }}",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+{% endblock %}

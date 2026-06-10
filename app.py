@@ -2,7 +2,7 @@ from flask import Flask, render_template, session, request
 from dotenv import load_dotenv
 from models.db import obtener_conexion_seguridad
 from models.catalogo import Catalogo
-import psutil
+
 import os
 
 load_dotenv() # Esto lee el archivo .env automáticamente
@@ -19,7 +19,11 @@ from controllers.citas_controller import citas_bp
 from controllers.permisos_controller import permisos_bp
 from controllers.bitacora_controller import bitacora_bp
 from controllers.mantenimientobd_controller import mantenimiento_bp
-
+from controllers.tallercontroller import tallerbp
+from controllers.mantenimiento_operacional_controller import mantenimiento_operacional_bp
+from controllers.reporte_mantenimiento_operacional_controller import reporte_mantenimiento_operacional_bp
+from controllers.servicios_controller import servicios_bp
+from controllers.reporte_servicios_controller import reporte_servicios_bp
 app = Flask(__name__)
 app.secret_key = '123456789' # nosec B105
 
@@ -35,13 +39,13 @@ app.register_blueprint(permisos_bp)
 app.register_blueprint(bitacora_bp)
 app.register_blueprint(ventas_bp)
 app.register_blueprint(mantenimiento_bp)
+app.register_blueprint(tallerbp)
+app.register_blueprint(mantenimiento_operacional_bp)
+app.register_blueprint(reporte_mantenimiento_operacional_bp)
+app.register_blueprint(servicios_bp)
+app.register_blueprint(reporte_servicios_bp)
 
-@app.before_request
-def monitor_recursos():
-    proceso = psutil.Process(os.getpid())
-    memoria_mb = proceso.memory_info().rss / (1024 * 1024)
-    # Ahora 'request.path' ya no dará error porque ya lo importamos arriba
-    print(f"--- MONITOREO RNF --- Ruta: {request.path} | RAM en uso: {memoria_mb:.2f} MB")
+
 
 # Este decorador hace que la función sea accesible en cualquier HTML
 @app.context_processor

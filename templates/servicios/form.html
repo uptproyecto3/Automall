@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    <div class="mb-4">
+                        <h3 class="fw-bold mb-1">
+                            {% if servicio %}Editar Servicio{% else %}Registrar Servicio{% endif %}
+                        </h3>
+                        <p class="text-muted mb-0">Agrega un servicio estético o de limpieza para el vehículo.</p>
+                    </div>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form id="formServicio" method="POST" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="nombre_servicio">Nombre del Servicio</label>
+                            <input
+                                type="text"
+                                id="nombre_servicio"
+                                name="nombre_servicio"
+                                class="form-control"
+                                required
+                                placeholder="Ej: Pulitura, Limpieza de tapicería"
+                                value="{{ servicio.nombre_servicio if servicio else '' }}"
+                            >
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" for="costo">Costo($)</label>
+                                <input
+                                    type="number"
+                                    id="costo"
+                                    name="costo"
+                                    class="form-control"
+                                    step="0.01"
+                                    min="0"
+                                    required
+                                    placeholder="0.00"
+                                    value="{{ servicio.costo if servicio else '' }}"
+                                >
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" for="placa_servicio">Vehículo</label>
+                                <select id="placa_servicio" name="placa" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for v in vehiculos %}
+                                    <option value="{{ v.placa }}" {% if servicio and servicio.placa == v.placa %}selected{% endif %}>
+                                        {{ v.placa }}
+                                    </option>
+                                    {% else %}
+                                    <option value="">No hay vehículos disponibles</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="descripcion_especifica">Descripción Específica</label>
+                            <textarea
+                                id="descripcion_especifica"
+                                name="descripcion_especifica"
+                                class="form-control"
+                                rows="4"
+                                required
+                                placeholder="Describe el servicio con detalle..."
+                            >{{ servicio.descripcion_especifica if servicio else '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                {% if servicio %}Actualizar{% else %}Guardar{% endif %}
+                            </button>
+                            <a href="{{ url_for('servicios.listar_servicios') }}" class="btn btn-secondary px-4">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('static', filename='js/validar_servicios.js') }}"></script>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <script>
+            Swal.fire({
+                icon: "{{ 'error' if category == 'danger' else category }}",
+                title: "{{ 'Error' if category == 'danger' else category|capitalize }}",
+                text: "{{ message }}",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+{% endblock %}
+{% endblock %}
