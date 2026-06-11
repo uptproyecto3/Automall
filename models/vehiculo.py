@@ -193,3 +193,36 @@ class Vehiculo:
         finally:
             cursor.close()
             conexion.close()
+
+    @staticmethod
+    def buscar_por_placa(placa):
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+        
+        # Limpiamos espacios y forzamos mayúsculas en el backend
+        placa_limpia = placa.strip().upper()
+        
+        sql = """
+            SELECT 
+                v.placa, 
+                m.nombre_marca AS marca, 
+                mo.nombre_modelo AS modelo, 
+                v.anio, 
+                v.color, 
+                v.tipo, 
+                c.precio, 
+                c.estado
+            FROM vehiculo v
+            INNER JOIN catalogo c ON v.placa = c.placa
+            INNER JOIN modelo mo ON v.cod_modelo = mo.cod_modelo
+            INNER JOIN marca m ON mo.cod_marca = m.cod_marca
+            WHERE v.placa = %s AND v.estado = 'Disponible'
+            LIMIT 1
+        """
+        
+        cursor.execute(sql, (placa_limpia,))
+        vehiculo = cursor.fetchone()
+        
+        cursor.close()
+        conexion.close()
+        return vehiculo

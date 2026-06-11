@@ -142,3 +142,23 @@ class Usuario:
         cursor.close()
         conexion.close()
         return usuario
+    
+    @staticmethod
+    def buscar_cliente_por_cedula(cedula):
+        conexion = obtener_conexion_seguridad()
+        cursor = conexion.cursor(dictionary=True) 
+        
+        # Añadimos telefono, direccion y correo a la consulta
+        sql = """
+            SELECT cedula_usuario, nombre, apellido, telefono, direccion, correo 
+            FROM t_usuario 
+            WHERE cedula_usuario = %s AND cod_rol = 4 
+            LIMIT 1
+        """
+        
+        cursor.execute(sql, (cedula,))
+        cliente = cursor.fetchone()
+        
+        cursor.close()
+        conexion.close()
+        return cliente

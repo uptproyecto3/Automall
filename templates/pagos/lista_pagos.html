@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">Mis Pagos Realizados</h2>
+            <p class="text-muted small">Consulta el historial de cuotas y abonos de tus vehículos</p>
+        </div>
+        <a href="{{ url_for('pagos.registrar_pago') }}" class="btn btn-success shadow-sm px-4 fw-bold">
+            <i class="bi bi-plus-lg me-2"></i>Registrar Nuevo Pago
+        </a>
+    </div>
+
+    {% if mensaje %}
+    <div class="alert alert-info border-0 shadow-sm text-center">{{ mensaje }}</div>
+    {% endif %}
+
+    <div class="row">
+        {% for p in pagos %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <!-- Cabecera de la Tarjeta -->
+                <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary mb-2 text-uppercase" style="letter-spacing: 1px;">
+                            Placa: {{ p.placa }}
+                        </span>
+                        <h5 class="fw-bold mb-0">${{ "{:,.2f}".format(p.monto_abonado) }}</h5>
+                        <small class="text-muted">Abonado el {{ p.fecha_pago.strftime('%d/%m/%Y') }}</small>
+                    </div>
+                    {% if p.estado_cuenta == 'pagado' %}
+                        <span class="badge bg-success rounded-pill px-3">Pagado</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark rounded-pill px-3">Pendiente</span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body px-4">
+                    <!-- Progreso de la Deuda -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Progreso de Pago</span>
+                            <span class="fw-bold text-dark">
+                                {{ (((p.deuda_total - p.saldo_pendiente) / p.deuda_total) * 100) | round | int }}%
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            {% set porcentaje = ((p.deuda_total - p.saldo_pendiente) / p.deuda_total) * 100 %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ porcentaje }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded text-center">
+                                <small class="text-muted d-block">Deuda Total</small>
+                                <span class="fw-bold text-dark small">${{ "{:,.2f}".format(p.deuda_total) }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-danger bg-opacity-10 rounded text-center">
+                                <small class="text-danger d-block">Saldo</small>
+                                <span class="fw-bold text-danger small">${{ "{:,.2f}".format(p.saldo_pendiente) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center small mb-3">
+                        <i class="bi bi-calendar-event me-1"></i> Vencimiento: 
+                        <span class="fw-bold">{{ p.fecha_vencimiento.strftime('%d/%m/%Y') if p.fecha_vencimiento else 'N/A' }}</span>
+                    </div>
+
+                    <button class="btn btn-outline-primary w-100 fw-bold py-2" 
+                            style="border-radius: 10px;" 
+                            type="button" 
+                            data-bs-toggle="collapse" 
+                            data-bs-target="#detalle-{{ p.cod_pagos }}">
+                        <i class="bi bi-info-circle me-2"></i> Ver más detalles
+                    </button>
+
+                    <!-- Sección Colapsable (Detalles extra) -->
+                    <div class="collapse mt-3" id="detalle-{{ p.cod_pagos }}">
+                        <div class="p-3 bg-light rounded shadow-inner" style="font-size: 0.85rem;">
+                            <p class="mb-1"><strong>Método:</strong> {{ p.nombre_metodo }}</p>
+                            <p class="mb-1"><strong>Moneda:</strong> {{ p.nombre_moneda }} ({{ p.simbolo }})</p>
+                            <p class="mb-1"><strong>Descripción:</strong> {{ p.descripcion }}</p>
+                            <p class="mb-1"><strong>Banco/Plat:</strong> {{ p.nombre_banco if p.nombre_banco else 'Digital' }}</p>
+                            <p class="mb-0 text-primary"><strong>Ref:</strong> {{ p.referencia if p.referencia else 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    body { background-color: #f8f9fa; }
+    .card { transition: transform 0.3s ease, shadow 0.3s ease; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .shadow-inner { box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+    .progress-bar { transition: width 1s ease-in-out; }
+</style>
+{% endblock %}

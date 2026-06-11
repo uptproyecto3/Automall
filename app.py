@@ -24,6 +24,8 @@ from controllers.mantenimiento_operacional_controller import mantenimiento_opera
 from controllers.reporte_mantenimiento_operacional_controller import reporte_mantenimiento_operacional_bp
 from controllers.servicios_controller import servicios_bp
 from controllers.reporte_servicios_controller import reporte_servicios_bp
+from controllers.pago_controller import pagos_bp
+
 app = Flask(__name__)
 app.secret_key = '123456789' # nosec B105
 
@@ -44,6 +46,7 @@ app.register_blueprint(mantenimiento_operacional_bp)
 app.register_blueprint(reporte_mantenimiento_operacional_bp)
 app.register_blueprint(servicios_bp)
 app.register_blueprint(reporte_servicios_bp)
+app.register_blueprint(pagos_bp)
 
 
 

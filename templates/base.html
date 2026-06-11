@@ -100,10 +100,10 @@
                             
                             <li><h6 class="dropdown-header">Ventas y Pagos</h6></li>
                             {% if tiene_permiso('Ventas', 'p_leer') %}
-                                <li><a class="dropdown-item" href="{{ url_for('ventas.registrar_venta') }}"><i class="bi bi-cash-stack me-2"></i>Venta de Vehículos</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('ventas.listado_ventas') }}"><i class="bi bi-cash-stack me-2"></i>Venta de Vehículos</a></li>
                             {% endif %}
                             {% if tiene_permiso('Pagos', 'p_leer') %}
-                                <li><a class="dropdown-item" href="/pagos"><i class="bi bi-calendar-event me-2"></i>Gestionar Pagos</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('pagos.listar_pagos') }}"><i class="bi bi-calendar-event me-2"></i>Gestionar Pagos</a></li>
                             {% endif %}
                         </ul>
                     </li>
