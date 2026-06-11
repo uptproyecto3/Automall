@@ -33,6 +33,20 @@
                         <div class="form-text mt-2 text-center" id="foto-error-msg">Haz clic en el botón azul para subir tu foto.</div>
                     </div>
 
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                {# Solo renderizamos la alerta común si NO es el mensaje de registro exitoso para evitar duplicados #}
+                                {% if "Registro exitoso" not in message %}
+                                    <div class="alert alert-danger d-flex align-items-center py-2 border-0 shadow-sm mb-4" role="alert">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <div class="small">{{ message }}</div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
                     <div class="col-12">
                         <h6 class="text-primary fw-bold text-uppercase small ls-1">Datos de Identidad</h6>
                         <hr class="mt-1 mb-3 opacity-25">

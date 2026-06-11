@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import session, flash, redirect, url_for
-from models.db import obtener_conexion_seguridad
+from models.permiso import Permiso  # Importamos la clase del modelo
 
 # Decorador para permisos específicos (Ej: eliminar, crear)
 def requiere_permiso(modulo, tipo_permiso):
@@ -11,34 +11,16 @@ def requiere_permiso(modulo, tipo_permiso):
             if not cod_rol: 
                 return redirect(url_for('auth.login'))
             
-            # --- MEJORA DE SEGURIDAD PARA BANDIT ---
-            # Definimos qué columnas son permitidas en la base de datos
-            permisos_validos = ['p_crear', 'p_eliminar', 'p_actualizar', 'p_leer'] # Ajusta según tus nombres reales de columnas
-            
+            # Lista blanca preventiva en el middleware por redundancia de seguridad
+            permisos_validos = ['p_crear', 'p_eliminar', 'p_actualizar', 'p_leer']
             if tipo_permiso not in permisos_validos:
-                flash("Error de seguridad: Permiso no reconocido.")
+                flash("Error de seguridad: Acción o permiso no reconocido.")
                 return redirect(url_for('index'))
-            # ---------------------------------------
 
-            conexion = obtener_conexion_seguridad()
-            cursor = conexion.cursor(dictionary=True)
+            # Invocamos la verificación abstrayendo por completo el SQL de la vista/utilidad
+            tiene_acceso = Permiso.verificar_acceso(cod_rol, modulo, tipo_permiso)
             
-            # Al usar la lista blanca arriba, este f-string ya es seguro.
-            # Usamos # nosec para que Bandit sepa que lo hemos revisado manualmente.
-            sql = f"""
-                SELECT rp.{tipo_permiso} as tiene_permiso 
-                FROM t_permiso_rol_modulo rp 
-                JOIN t_modulo m ON rp.cod_modulo = m.cod_modulo 
-                WHERE rp.cod_rol = %s AND m.nombre_modulo = %s
-            """ # nosec B608
-            
-            cursor.execute(sql, (cod_rol, modulo))
-            res = cursor.fetchone()
-            
-            cursor.close()
-            conexion.close()
-            
-            if res and res['tiene_permiso'] == 1:
+            if tiene_acceso:
                 return f(*args, **kwargs)
             else:
                 flash("Acceso denegado: No tienes permisos para esta acción.")
@@ -51,7 +33,6 @@ def requiere_permiso(modulo, tipo_permiso):
 def requiere_superusuario(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        # Asumiendo que el ID del 'Super Usuario' en tu BD es 1
         if session.get('cod_rol') == 1:
             return f(*args, **kwargs)
         else:

@@ -1,5 +1,6 @@
 from models.db import obtener_conexion_seguridad
 from utils.validaciones import ValidacionUsuario  # Importamos la clase de validaciones
+from werkzeug.security import check_password_hash  # <-- IMPORTACIÓN CLAVE
 
 class Auth: 
     def __init__(self, cedula_usuario, nombre, apellido, telefono, direccion, correo, password):
@@ -16,20 +17,29 @@ class Auth:
         # Validar formato de correo antes de consultar
         error_correo = ValidacionUsuario.validar_formato_correo(correo)
         if error_correo:
-            # Puedes retornar un diccionario o manejar el error según tu controlador
             return {"error": error_correo} 
 
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True)
         
-        # IMPORTANTE: Se incluye cod_rol para el manejo de sesiones
-        sql = "SELECT cedula_usuario, nombre, cod_rol FROM t_usuario WHERE correo = %s AND password = %s"
-        cursor.execute(sql, (correo, password))
+        # Consultamos trayendo también la columna password (donde está el hash)
+        sql = "SELECT cedula_usuario, nombre, cod_rol, password FROM t_usuario WHERE correo = %s"
+        cursor.execute(sql, (correo,))
         usuario = cursor.fetchone()
         
         cursor.close()
         conexion.close()
-        return usuario
+        
+        # Si el usuario existe, usamos check_password_hash para validar la clave
+        if usuario:
+            # Comparamos la contraseña recibida con el hash de la BD
+            if check_password_hash(usuario['password'], password):
+                # Limpiamos el hash del diccionario por seguridad antes de enviarlo al controlador
+                usuario.pop('password', None)
+                return usuario
+            
+        # Si no existe el usuario o la contraseña no coincide, retornamos None
+        return None
     
     @staticmethod
     def obtener_pregunta(correo):

@@ -7,7 +7,7 @@ class Permiso:
         cursor = conexion.cursor(dictionary=True)
         cursor.execute("SELECT * FROM t_rol")
         roles = cursor.fetchall()
-        cursor.close()  # ¡Importante cerrar siempre el cursor antes de la conexión!
+        cursor.close()  
         conexion.close()
         return roles
 
@@ -16,7 +16,6 @@ class Permiso:
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True)
         
-        # Agregamos espacios limpios al inicio de cada línea del string multilinea
         sql = """
             SELECT rp.*, m.nombre_modulo 
             FROM t_permiso_rol_modulo rp
@@ -25,7 +24,7 @@ class Permiso:
         """
         cursor.execute(sql, (cod_rol,))
         permisos = cursor.fetchall()
-        cursor.close()  # Cerramos el cursor
+        cursor.close()  
         conexion.close()
         return permisos
 
@@ -34,7 +33,6 @@ class Permiso:
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor()
         
-        # Aseguramos espacios limpios alrededor de las palabras clave del UPDATE
         sql = """
             UPDATE t_permiso_rol_modulo 
             SET p_crear = %s, 
@@ -45,5 +43,36 @@ class Permiso:
         """
         cursor.execute(sql, (p_crear, p_leer, p_actualizar, p_eliminar, cod_permiso))
         conexion.commit()
-        cursor.close()  # Cerramos el cursor para liberar el búfer del comando UPDATE
+        cursor.close()  
         conexion.close()
+
+    @staticmethod
+    def verificar_acceso(cod_rol, modulo, tipo_permiso):
+        """
+        Verifica si un rol específico cuenta con un permiso activo para un módulo determinado.
+        Regresa True si tiene acceso (1), de lo contrario False.
+        """
+        permisos_validos = ['p_crear', 'p_eliminar', 'p_actualizar', 'p_leer']
+        
+        if tipo_permiso not in permisos_validos:
+            return False
+
+        conexion = obtener_conexion_seguridad()
+        cursor = conexion.cursor(dictionary=True)
+        
+        # Al validar contra la lista blanca, evitamos inyecciones en el identificador de columna
+        sql = f"""
+            SELECT rp.{tipo_permiso} as tiene_permiso 
+            FROM t_permiso_rol_modulo rp 
+            JOIN t_modulo m ON rp.cod_modulo = m.cod_modulo 
+            WHERE rp.cod_rol = %s AND m.nombre_modulo = %s
+        """ # nosec B608
+        
+        cursor.execute(sql, (cod_rol, modulo))
+        res = cursor.fetchone()
+        
+        cursor.close()
+        conexion.close()
+        
+        # Evaluamos explícitamente si el registro existe y su bit/int está activo en 1
+        return True if res and res['tiene_permiso'] == 1 else False

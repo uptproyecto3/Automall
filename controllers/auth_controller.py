@@ -11,15 +11,15 @@ def login():
         correo = request.form.get('email')
         password = request.form.get('password')
         
-        # El modelo devuelve un dict con 'error' si la validación falla
+        # El modelo ahora valida internamente tanto el formato como el hash seguro
         usuario = Auth.verificar_credenciales(correo, password)
         
-        # 1. Validar si el modelo devolvió un error de validación (de utils)
+        # 1. Validar si el modelo devolvió un error de validación de formato (de utils)
         if isinstance(usuario, dict) and 'error' in usuario:
             flash(usuario['error'], "warning")
             return render_template('auth/login.html')
 
-        # 2. Si las credenciales son correctas (devolvió los datos del usuario)
+        # 2. Si las credenciales pasaron el check_password_hash (devolvió los datos del usuario)
         if usuario:
             session['cedula_usuario'] = usuario['cedula_usuario']
             session['usuario_nombre'] = usuario['nombre']
@@ -28,7 +28,7 @@ def login():
             flash(f"Bienvenido, {usuario['nombre']}", "success")
             return redirect(url_for('index'))
         else:
-            # 3. Si no hay usuario y no hubo error de formato, las credenciales no existen
+            # 3. Si retornó None, significa que el correo no existe o el hash no coincidió
             flash("Correo o contraseña incorrectos.", "danger")
             
     return render_template('auth/login.html')

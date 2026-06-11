@@ -28,19 +28,20 @@
                 
                 <td>
                     {% if tiene_permiso('Usuarios', 'p_actualizar') %}
-                    <!-- Pasamos las variables ordenadas. Dejamos cedula_usuario de última para el modal readonly -->
                     <button 
-                        class="btn btn-warning btn-sm me-2"
+                        class="btn btn-outline-primary btn-sm me-1"
+                        title="Ver detalles / Editar"
                         onclick="abrirModalEditar('{{ u.cedula_usuario }}', '{{ u.nombre }}', '{{ u.apellido }}', '{{ u.telefono }}', '{{ u.direccion }}', '{{ u.correo }}')">
-                        Editar
+                        <i class="bi bi-eye-fill"></i>
                     </button>
                     {% endif %}
 
                     {% if tiene_permiso('Usuarios', 'p_eliminar') %}
                     <button 
-                        class="btn btn-danger btn-sm"
+                        class="btn btn-outline-danger btn-sm"
+                        title="Eliminar usuario"
                         onclick="confirmarEliminar('{{ u.cedula_usuario }}')">
-                        Eliminar
+                        <i class="bi bi-trash-fill"></i>
                     </button>
                     {% endif %}
                 </td>

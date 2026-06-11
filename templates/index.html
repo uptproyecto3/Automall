@@ -2,7 +2,168 @@
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-<!-- CARRUSEL  -->
+<style>
+    /* Botón Flotante */
+    .btn-ia-float {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 65px;
+        height: 65px;
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 10px 25px rgba(102, 16, 242, 0.4);
+        cursor: pointer;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-ia-float:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 15px 30px rgba(102, 16, 242, 0.6);
+    }
+
+    /* Efecto de Pulso */
+    .ia-pulse {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(102, 16, 242, 0.4);
+        animation: ia-pulse-animation 2s infinite;
+    }
+
+    @keyframes ia-pulse-animation {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* Ventana de Chat Base */
+    #chat-window {
+        position: fixed;
+        bottom: 110px;
+        right: 30px;
+        width: 350px;
+        height: 500px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+        display: none; 
+        flex-direction: column;
+        z-index: 1001;
+        overflow: hidden;
+        border: 1px solid #eee;
+        transition: cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s all;
+    }
+
+    /* ESTADO EXPANDIDO (PANTALLA COMPLETA VISUAL) */
+    #chat-window.chat-fullscreen {
+        width: 90vw !important;
+        height: 85vh !important;
+        bottom: 7vh !important;
+        right: 5vw !important;
+        border-radius: 25px;
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        color: white;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chat-body {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .message {
+        max-width: 70%; /* Reducido un poco para que se vea mejor en pantallas grandes */
+        padding: 12px 18px;
+        border-radius: 15px;
+        font-size: 0.95rem;
+    }
+
+    .bot-msg {
+        background: white;
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .user-msg {
+        background: #0d6efd;
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 2px;
+    }
+
+    .chat-footer {
+        padding: 15px;
+        background: white;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 10px;
+    }
+
+    .chat-footer input {
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        padding: 8px 20px;
+        flex: 1;
+    }
+</style>
+
+<div class="btn-ia-float" onclick="toggleChat()">
+    <div class="ia-pulse"></div>
+    <i class="bi bi-robot fs-2" style="position:relative; z-index:2;"></i>
+</div>
+
+<div id="chat-window">
+    <div class="chat-header">
+        <i class="bi bi-robot fs-4"></i>
+        <div>
+            <h6 class="mb-0">AutoMall AI</h6>
+            <small><span class="text-white-50">●</span> En línea ahora</small>
+        </div>
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <button onclick="toggleExpandir()" class="btn p-0 text-white" title="Expandir vista">
+                <i class="bi bi-arrows-fullscreen" id="expand-icon"></i>
+            </button>
+            <button onclick="toggleChat()" class="btn-close btn-close-white" style="font-size: 0.7rem;"></button>
+        </div>
+    </div>
+    <div class="chat-body" id="chat-content">
+        <div class="message bot-msg">
+            ¡Hola! 👋 Soy el asistente inteligente de AutoMall. ¿En qué vehículo estás interesado hoy?
+        </div>
+        <div class="message user-msg">
+            Hola, busco una camioneta familiar.
+        </div>
+        <div class="message bot-msg">
+            Excelente elección. Basado en nuestro inventario, te recomiendo la <b>Toyota Fortuner 2023</b> por su seguridad y amplio espacio. ¿Te gustaría ver los detalles?
+        </div>
+    </div>
+    <div class="chat-footer">
+        <input type="text" placeholder="Pregunta sobre un coche..." id="fake-input">
+        <button class="btn btn-primary rounded-circle p-2" onclick="fakeSend()">
+            <i class="bi bi-send-fill"></i>
+        </button>
+    </div>
+</div>
+
 <div id="heroCarousel" class="carousel slide carousel-fade mb-5 shadow" data-bs-ride="carousel">
     <div class="carousel-inner">
         <div class="carousel-item active">
@@ -40,11 +201,9 @@
         </div>
     {% endif %}
 
-    <!-- SECCIÓN DE VEHÍCULOS  -->
     <section class="mt-5 text-center">
         <h2 class="section-title mb-5">Vehículos Destacados</h2>
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            
             {% for v in vehiculos %}
             <div class="col">
                 <div class="card h-100 card-vehiculo border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
@@ -81,74 +240,56 @@
     </section>
 </div>
 
-<!-- MODAL QUIÉNES SOMOS -->
-<div class="modal fade" id="modalQuienesSomos" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">Acerca de AutoMall</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4 text-center">
-                <div class="mb-3">
-                    <i class="bi bi-info-circle-fill text-primary" style="font-size: 3rem;"></i>
-                </div>
-                <h4>Pasión por la excelencia</h4>
-                <p class="text-muted">Somos la plataforma líder en gestión y venta de vehículos universitarios. Con más de 10 años en el mercado, garantizamos transparencia, seguridad y los mejores precios del sector.</p>
-                <hr>
-                <p class="small">Ubicación: Av. Principal, Sector Automotriz.<br>Contacto: info@automall.com</p>
-            </div>
-            <div class="modal-footer border-0 justify-content-center">
-                <button type="button" class="btn btn-modern px-5" data-bs-dismiss="modal">Entendido</button>
-            </div>
-        </div>
-    </div>
-</div>
+<script>
+    function toggleChat() {
+        const chat = document.getElementById('chat-window');
+        if (chat.style.display === 'none' || chat.style.display === '') {
+            chat.style.display = 'flex';
+        } else {
+            chat.style.display = 'none';
+            // Si cierran el chat, aseguramos que se contraiga para la próxima vez
+            chat.classList.remove('chat-fullscreen');
+            document.getElementById('expand-icon').className = 'bi bi-arrows-fullscreen';
+        }
+    }
 
-<!-- MODAL DETALLE DE VENTA PARA CLIENTES -->
-<div class="modal fade" id="modalDetalleVenta" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered"> 
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
-            <div class="modal-body p-0">
-                <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3 bg-white p-2 rounded-circle shadow-sm" data-bs-dismiss="modal"></button>
-                
-                <div class="row g-0">
-                    <div class="col-lg-8 d-none d-lg-block">
-                        <div class="h-100 w-100 bg-light" style="min-height: 550px; overflow: hidden; border-radius: 25px 0 0 25px;">
-                            <img id="modal-v-img" src="" 
-                                 class="w-100 h-100" 
-                                 style="object-fit: cover; display: block; transition: all 0.5s ease;">
-                        </div>
-                    </div>
-                    
-                    <div class="col-lg-4 p-4 p-md-5 d-flex flex-column justify-content-center bg-white" style="border-radius: 0 25px 25px 0;">
-                        <div class="mb-4">
-                            <span id="modal-v-marca" class="text-primary fw-bold text-uppercase ls-wider small"></span>
-                            <h2 id="modal-v-modelo" class="display-5 fw-bold text-dark mt-1"></h2>
-                            <span id="modal-v-anio" class="badge bg-light text-primary border px-3 py-2 rounded-pill mt-2"></span>
-                        </div>
+    function toggleExpandir() {
+        const chat = document.getElementById('chat-window');
+        const icon = document.getElementById('expand-icon');
+        
+        // Alternamos la clase de pantalla completa
+        chat.classList.toggle('chat-fullscreen');
+        
+        // Cambiamos el icono dependiendo del estado
+        if (chat.classList.contains('chat-fullscreen')) {
+            icon.className = 'bi bi-fullscreen-exit'; // Icono para achicar
+        } else {
+            icon.className = 'bi bi-arrows-fullscreen'; // Icono para agrandar
+        }
+    }
 
-                        <div class="mb-4">
-                            <h3 id="modal-v-precio" class="text-success fw-bold display-6 mb-0"></h3>
-                            <p class="text-muted small">Precio Final / Negociable</p>
-                        </div>
+    function fakeSend() {
+        const input = document.getElementById('fake-input');
+        const content = document.getElementById('chat-content');
+        
+        if (input.value.trim() !== "") {
+            content.innerHTML += `<div class="message user-msg">${input.value}</div>`;
+            input.value = "";
+            content.scrollTop = content.scrollHeight;
+            
+            setTimeout(() => {
+                content.innerHTML += `<div class="message bot-msg" id="typing">Escribiendo...</div>`;
+                content.scrollTop = content.scrollHeight;
+            }, 500);
 
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-dark border-bottom pb-2"><i class="bi bi-info-circle me-2"></i>Especificaciones</h6>
-                            <p id="modal-v-desc" class="text-muted" style="font-size: 0.95rem; line-height: 1.6;"></p>
-                        </div>
-
-                        <div class="mt-auto">
-                            <button class="btn btn-primary w-100 btn-lg rounded-pill shadow-sm py-3 fw-bold">
-                                <a href="{{ url_for('citas.agendar') }}" class="text-white text-decoration-none">Agendar Cita</a>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+            setTimeout(() => {
+                const typing = document.getElementById('typing');
+                if(typing) typing.remove();
+                content.innerHTML += `<div class="message bot-msg">Entiendo que te interesa saber más sobre eso. Como IA, puedo confirmarte que AutoMall tiene las mejores opciones en esa categoría. ¿Te gustaría agendar una cita para probar uno?</div>`;
+                content.scrollTop = content.scrollHeight;
+            }, 2000);
+        }
+    }
+</script>
 <script src="{{ url_for('static', filename='js/registro_vehiculo.js') }}?v={{ range(1, 1000) | random }}"></script>
 {% endblock %}
