@@ -160,4 +160,4 @@ def eliminar_cliente(cedula):
     else:
         flash(f"⚠️ {resultado['mensaje']}", "danger")
 
-    return redirect(url_for('clientes.listar_clientes'))
+    return redirect(url_for('clientes.listar_clientes'))

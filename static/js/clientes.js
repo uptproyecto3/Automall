@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $(document).on('click', '.btn-editar-cliente', function () {
         var btn       = $(this);
         var cedula    = btn.attr('data-cedula');
-        var textNombre = btn.attr('data-nombre');
+        var nombre    = btn.attr('data-nombre');
         var apellido  = btn.attr('data-apellido');
         var telefono  = btn.attr('data-telefono');
         var direccion = btn.attr('data-direccion');
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var fotoUrl   = btn.attr('data-foto');
 
         $('#editar_cedula_display').val(cedula);
-        $('#editar_nombre').val(textNombre);
+        $('#editar_nombre').val(nombre);
         $('#editar_apellido').val(apellido);
         $('#editar_telefono').val(telefono);
         $('#editar_direccion').val(direccion);
@@ -109,3 +109,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 5000);
 
 });
+
