@@ -1,12 +1,13 @@
 from flask import Flask, render_template, session, request 
 from dotenv import load_dotenv
-from models.db import obtener_conexion_seguridad
 from models.catalogo import Catalogo
+from models.permiso import Permiso  # <-- IMPORTAMOS EL MODELO DE PERMISOS
 
 import os
 
 load_dotenv() # Esto lee el archivo .env automáticamente
 
+# ... (Tus importaciones de blueprints se mantienen exactamente igual) ...
 from controllers.auth_controller import auth_bp
 from controllers.user_controller import user_bp
 from controllers.vehiculos_controller import vehiculos_bp
@@ -29,6 +30,7 @@ from controllers.pago_controller import pagos_bp
 app = Flask(__name__)
 app.secret_key = '123456789' # nosec B105
 
+# ... (Tus registros de blueprints se mantienen exactamente igual) ...
 app.register_blueprint(auth_bp)
 app.register_blueprint(user_bp)
 app.register_blueprint(vehiculos_bp)
@@ -49,42 +51,24 @@ app.register_blueprint(reporte_servicios_bp)
 app.register_blueprint(pagos_bp)
 
 
-
-# Este decorador hace que la función sea accesible en cualquier HTML
+# --- CONTEXT PROCESSOR REFACTORIZADO Y SEGURO ---
 @app.context_processor
 def inject_permisos():
     def tiene_permiso(modulo, tipo_permiso):
-        if 'cod_rol' not in session:
+        cod_rol = session.get('cod_rol')
+        
+        if not cod_rol:
             return False
         
-        if session.get('cod_rol') == 1:
+        # Si es Super Usuario (Rol 1), omitimos la consulta y damos acceso total en las vistas
+        if cod_rol == 1:
             return True
             
-        # LISTA BLANCA DE SEGURIDAD (Añadido para Bandit)
-        permisos_validos = ['p_crear', 'p_eliminar', 'p_actualizar', 'p_leer']
-        if tipo_permiso not in permisos_validos:
-            return False
-            
-        conexion = obtener_conexion_seguridad()
-        cursor = conexion.cursor(dictionary=True)
-        
-        # Usamos nosec porque ya validamos con la lista blanca arriba
-        sql = f"""
-            SELECT rp.{tipo_permiso} as permiso 
-            FROM t_permiso_rol_modulo rp
-            JOIN t_modulo m ON rp.cod_modulo = m.cod_modulo
-            WHERE rp.cod_rol = %s AND m.nombre_modulo = %s
-        """ # nosec B608
-        
-        cursor.execute(sql, (session.get('cod_rol'), modulo))
-        res = cursor.fetchone()
-        
-        cursor.close() 
-        conexion.close()
-        
-        return res and res['permiso'] == 1
+        # Delegamos la validación y consulta SQL directamente a la capa del Modelo
+        return Permiso.verificar_acceso(cod_rol, modulo, tipo_permiso)
         
     return dict(tiene_permiso=tiene_permiso)
+
 
 @app.route('/')
 def index():
@@ -95,6 +79,3 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True)  # nosec B201
-
-
-
