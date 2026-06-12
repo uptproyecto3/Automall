@@ -33,17 +33,7 @@ $(document).ready(function () {
         }
     });
 
-    $('#costo').on('input blur', function () {
-        const val = parseFloat($(this).val());
-
-        if ($(this).val().trim() === '') {
-            mostrarMensajeDebajo($(this), 'El costo es obligatorio.');
-        } else if (isNaN(val) || val < 0) {
-            mostrarMensajeDebajo($(this), 'El costo debe ser un número válido mayor o igual a 0.');
-        } else {
-            $(this).next('.mensaje-error-simple').remove();
-        }
-    });
+  
 
     $('#placa').on('change blur', function () {
         if ($(this).val() === '') {
@@ -77,7 +67,7 @@ $(document).ready(function () {
         const placa = $('#placa').val();
         const descripcion = $('#descripcion_especifica').val().trim();
         const regexNombre = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
-        const costoNum = parseFloat(costo);
+      
 
         if (nombre === '') {
             mostrarMensajeDebajo($('#nombre_servicio'), 'El nombre del servicio es obligatorio.');
@@ -93,15 +83,7 @@ $(document).ready(function () {
             error = true;
         }
 
-        if (costo === '') {
-            mostrarMensajeDebajo($('#costo'), 'El costo es obligatorio.');
-            if (!error) $('#costo').focus();
-            error = true;
-        } else if (isNaN(costoNum) || costoNum < 0) {
-            mostrarMensajeDebajo($('#costo'), 'El costo debe ser un número válido mayor o igual a 0.');
-            if (!error) $('#costo').focus();
-            error = true;
-        }
+      
 
         if (placa === '') {
             mostrarMensajeDebajo($('#placa'), 'Seleccione un vehículo.');

@@ -1,69 +1,27 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow border-0" style="border-radius: 10px;">
                 <div class="card-body p-4 p-md-5">
                     <div class="mb-4">
                         {% if mantenimiento %}
-                            <h3 class="fw-bold mb-1">Editar Mantenimiento Operacional</h3>
+                            <h3 class="text-primary fw-bold mb-1">Editar Mantenimiento Operacional</h3>
                             <p class="text-muted mb-0">Actualiza la información del mantenimiento registrado.</p>
                         {% else %}
-                            <h3 class="fw-bold mb-1">Registrar Mantenimiento Operacional</h3>
+                            <h3 class="text-primary fw-bold mb-1">Registrar Mantenimiento Operacional</h3>
                             <p class="text-muted mb-0">Llena los datos del vehículo, taller y fechas del proceso.</p>
                         {% endif %}
                     </div>
 
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-
                     <form method="POST" novalidate>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" for="descripcion_general">Descripción General</label>
-                            <textarea id="descripcion_general" name="descripcion_general" class="form-control" rows="4" required placeholder="Describe el mantenimiento a realizar...">{% if mantenimiento %}{{ mantenimiento.descripcion_general }}{% endif %}</textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" for="quien_autoriza">Quién Autoriza</label>
-                            <input type="text" id="quien_autoriza" name="quien_autoriza" class="form-control" required placeholder="Nombre de la persona que autoriza" value="{% if mantenimiento %}{{ mantenimiento.quien_autoriza }}{% endif %}">
-                        </div>
-
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" for="tipo">Tipo de Mantenimiento</label>
-                                <input type="text" id="tipo" name="tipo" class="form-control" required placeholder="Ej: Preventivo, Correctivo" value="{% if mantenimiento %}{{ mantenimiento.tipo }}{% endif %}">
-                            </div>
-
-                           
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" for="fecha_salida">Fecha de Salida</label>
-                                <input type="date" id="fecha_salida" name="fecha_salida" class="form-control" required value="{% if mantenimiento %}{{ mantenimiento.fecha_salida }}{% endif %}">
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" for="fecha_entrega">Fecha de Entrega</label>
-                                <input type="date" id="fecha_entrega" name="fecha_entrega" class="form-control" required value="{% if mantenimiento %}{{ mantenimiento.fecha_entrega }}{% endif %}">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
                                 <label class="form-label fw-semibold" for="placa">Vehículo</label>
                                 <select id="placa" name="placa" class="form-select" required>
-                                    <option value="">Seleccione...</option>
+                                    <option value="">Seleccione un vehículo...</option>
                                     {% for v in vehiculos %}
                                     <option value="{{ v.placa }}" {% if mantenimiento and mantenimiento.placa == v.placa %}selected{% endif %}>{{ v.placa }} - {{ v.estado }}</option>
                                     {% else %}
@@ -72,10 +30,10 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label fw-semibold" for="cod_taller">Taller</label>
                                 <select id="cod_taller" name="cod_taller" class="form-select" required>
-                                    <option value="">Seleccione...</option>
+                                    <option value="">Seleccione un taller...</option>
                                     {% for t in talleres %}
                                     <option value="{{ t.cod_taller }}" {% if mantenimiento and mantenimiento.cod_taller == t.cod_taller %}selected{% endif %}>{{ t.nombre_taller }}</option>
                                     {% else %}
@@ -83,6 +41,43 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" for="quien_autoriza">Quién Autoriza</label>
+                                <select id="quien_autoriza" name="quien_autoriza" class="form-select" required>
+                                    <option value="">Seleccione rol...</option>
+                                    <option value="Superusuario" {% if mantenimiento and mantenimiento.quien_autoriza == 'Superusuario' %}selected{% endif %}>Superusuario</option>
+                                    <option value="Administrador" {% if mantenimiento and mantenimiento.quien_autoriza == 'Administrador' %}selected{% endif %}>Administrador</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" for="tipo">Tipo de Mantenimiento</label>
+                                <select id="tipo" name="tipo" class="form-select" required>
+                                    <option value="">Seleccione tipo...</option>
+                                    <option value="Preventivo" {% if mantenimiento and mantenimiento.tipo == 'Preventivo' %}selected{% endif %}>Preventivo</option>
+                                    <option value="Correctivo" {% if mantenimiento and mantenimiento.tipo == 'Correctivo' %}selected{% endif %}>Correctivo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" for="fecha_salida">Fecha de Salida</label>
+                                <input type="date" id="fecha_salida" name="fecha_salida" class="form-control" required value="{% if mantenimiento %}{{ mantenimiento.fecha_salida }}{% endif %}">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" for="fecha_entrega">Fecha de Entrega <span class="text-muted fw-normal">(Opcional)</span></label>
+                                <input type="date" id="fecha_entrega" name="fecha_entrega" class="form-control" value="{% if mantenimiento %}{{ mantenimiento.fecha_entrega }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="descripcion_general">Descripción General</label>
+                            <textarea id="descripcion_general" name="descripcion_general" class="form-control" rows="4" required placeholder="Describe detalladamente el mantenimiento a realizar...">{% if mantenimiento %}{{ mantenimiento.descripcion_general }}{% endif %}</textarea>
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
@@ -100,19 +95,19 @@
     </div>
 </div>
 
-
-
 {% block scripts %}
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="{{ url_for('static', filename='js/validar_mantenimiento_operacional.js') }}"></script>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-        <script>
+<script src="{{ url_for('static', filename='js/validar_mantenimiento_operacional.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    
+    /* {% with messages = get_flashed_messages(with_categories=true) %} */
+        /* {% if messages %} */
+            /* {% for category, message in messages %} */
             Swal.fire({
                 icon: "{{ 'error' if category == 'danger' else category }}",
                 title: "{{ 'Error' if category == 'danger' else category|capitalize }}",
@@ -120,10 +115,11 @@
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true
-            });
-        </script>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+            })
+            /* {% endfor %} */
+        /* {% endif %} */
+    /* {% endwith %} */
+})
+</script>
 {% endblock %}
 {% endblock %}

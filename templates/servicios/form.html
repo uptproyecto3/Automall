@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
@@ -13,6 +14,7 @@
                         <p class="text-muted mb-0">Agrega un servicio estético o de limpieza para el vehículo.</p>
                     </div>
 
+
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             {% for category, message in messages %}
@@ -24,7 +26,26 @@
                         {% endif %}
                     {% endwith %}
 
+
                     <form id="formServicio" method="POST" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="placa">Vehículo</label>
+                            <select
+                                id="placa"
+                                name="placa"
+                                class="form-select"
+                                required
+                            >
+                                <option value="">Seleccione un vehículo...</option>
+                                {% for v in vehiculos %}
+                                <option value="{{ v.placa }}" {% if servicio and servicio.placa == v.placa %}selected{% endif %}>
+                                    {{ v.placa }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="nombre_servicio">Nombre del Servicio</label>
                             <input
@@ -38,9 +59,10 @@
                             >
                         </div>
 
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" for="costo">Costo($)</label>
+                                <label class="form-label fw-semibold" for="costo">Costo($) <span class="text-muted fw-normal">(Opcional)</span></label>
                                 <input
                                     type="number"
                                     id="costo"
@@ -48,26 +70,12 @@
                                     class="form-control"
                                     step="0.01"
                                     min="0"
-                                    required
                                     placeholder="0.00"
                                     value="{{ servicio.costo if servicio else '' }}"
                                 >
                             </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" for="placa_servicio">Vehículo</label>
-                                <select id="placa_servicio" name="placa" class="form-select" required>
-                                    <option value="">Seleccione...</option>
-                                    {% for v in vehiculos %}
-                                    <option value="{{ v.placa }}" {% if servicio and servicio.placa == v.placa %}selected{% endif %}>
-                                        {{ v.placa }}
-                                    </option>
-                                    {% else %}
-                                    <option value="">No hay vehículos disponibles</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
                         </div>
+
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="descripcion_especifica">Descripción Específica</label>
@@ -80,6 +88,7 @@
                                 placeholder="Describe el servicio con detalle..."
                             >{{ servicio.descripcion_especifica if servicio else '' }}</textarea>
                         </div>
+
 
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn btn-primary px-4">
@@ -94,12 +103,15 @@
     </div>
 </div>
 
+
 {% block scripts %}
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script src="{{ url_for('static', filename='js/validar_servicios.js') }}"></script>
+
 
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
