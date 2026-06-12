@@ -67,14 +67,7 @@ $(document).ready(function () {
         }
     });
 
-    $('#fecha_entrega').on('change blur', function () {
-        if ($(this).val() === '') {
-            mostrarMensajeDebajo($(this), 'Seleccione la fecha de entrega.');
-        } else {
-            $(this).next('.mensaje-error-simple').remove();
-        }
-    });
-
+    
     $('#placa').on('change blur', function () {
         if ($(this).val() === '') {
             mostrarMensajeDebajo($(this), 'Seleccione un vehículo.');
@@ -145,11 +138,7 @@ $(document).ready(function () {
             error = true;
         }
 
-        if (fechaEntrega === '') {
-            mostrarMensajeDebajo($('#fecha_entrega'), 'Seleccione la fecha de entrega.');
-            if (!error) $('#fecha_entrega').focus();
-            error = true;
-        }
+       
 
         if (fechaSalida && fechaEntrega && fechaEntrega < fechaSalida) {
             mostrarMensajeDebajo($('#fecha_entrega'), 'La fecha de entrega no puede ser menor que la fecha de salida.');
