@@ -12,10 +12,15 @@ mantenimiento_operacional_bp = Blueprint('mantenimiento_operacional', __name__)
 def listar_mantenimiento():
     mantenimientos = MantenimientoOperacional.obtener_mantenimientos()
     talleres = MantenimientoOperacional.obtener_talleres()
+    
+   
+    vehiculos = MantenimientoOperacional.obtener_vehiculos_disponibles()
+    
     return render_template(
         'mantenimiento_operacional/index.html',
         mantenimientos=mantenimientos,
-        talleres=talleres
+        talleres=talleres,
+        vehiculos=vehiculos 
     )
 
 
@@ -31,12 +36,12 @@ def crear_mantenimiento():
         quien_autoriza = request.form.get('quien_autoriza', '').strip()
         tipo = request.form.get('tipo', '').strip()
         fecha_salida = request.form.get('fecha_salida', '').strip()
-        fecha_entrega = request.form.get('fecha_entrega', '').strip()
+        fecha_entrega = request.form.get('fecha_entrega', '').strip()  # Campo opcional
         placa = request.form.get('placa', '').strip()
         cod_taller = request.form.get('cod_taller', '').strip()
 
         try:
-            if not descripcion_general or not quien_autoriza or not tipo or not fecha_salida or not fecha_entrega or not placa or not cod_taller:
+            if not descripcion_general or not quien_autoriza or not tipo or not fecha_salida or not placa or not cod_taller:
                 flash('Completa todos los campos obligatorios.', 'warning')
                 return render_template(
                     'mantenimiento_operacional/form.html',
@@ -50,7 +55,7 @@ def crear_mantenimiento():
                 quien_autoriza,
                 tipo,
                 fecha_salida,
-                fecha_entrega,
+                fecha_entrega if fecha_entrega else None,
                 placa,
                 cod_taller
             )
@@ -98,12 +103,12 @@ def editar_mantenimiento(cod_mantenimiento):
         quien_autoriza = request.form.get('quien_autoriza', '').strip()
         tipo = request.form.get('tipo', '').strip()
         fecha_salida = request.form.get('fecha_salida', '').strip()
-        fecha_entrega = request.form.get('fecha_entrega', '').strip()
+        fecha_entrega = request.form.get('fecha_entrega', '').strip()  # Campo opcional
         placa = request.form.get('placa', '').strip()
         cod_taller = request.form.get('cod_taller', '').strip()
 
         try:
-            if not descripcion_general or not quien_autoriza or not tipo or not fecha_salida or not fecha_entrega or not placa or not cod_taller:
+            if not descripcion_general or not quien_autoriza or not tipo or not fecha_salida or not placa or not cod_taller:
                 flash('Completa todos los campos obligatorios.', 'warning')
                 return render_template(
                     'mantenimiento_operacional/form.html',
@@ -118,7 +123,7 @@ def editar_mantenimiento(cod_mantenimiento):
                 quien_autoriza,
                 tipo,
                 fecha_salida,
-                fecha_entrega,
+                fecha_entrega if fecha_entrega else None,
                 placa,
                 cod_taller
             )

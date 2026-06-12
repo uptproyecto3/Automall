@@ -1,93 +1,129 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-1">Gestión de Talleres</h2>
+            <h2 class="text-primary fw-bold">Gestión de Talleres</h2>
             <p class="text-muted mb-0">Administración de talleres registrados en el sistema.</p>
         </div>
 
-        {% if tiene_permiso('Taller', 'p_crear') %}
-        <a href="{{ url_for('tallerbp.crear_taller') }}" class="btn btn-primary rounded-pill px-4">
-            <i class="bi bi-plus-circle me-2"></i>Nuevo Taller
-        </a>
-        {% endif %}
+        <div class="d-flex gap-2 flex-wrap">
+            {% if tiene_permiso('Taller', 'p_crear') %}
+            <a href="{{ url_for('tallerbp.crear_taller') }}" class="btn btn-success rounded-pill px-4">
+                <i class="bi bi-plus-circle me-2"></i>Registrar Taller
+            </a>
+            {% endif %}
+        </div>
     </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="container-fluid mt-4 mb-5 px-0">
+        <div class="card shadow border-0" style="border-radius: 10px;">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-list-ul me-2"></i>Inventario de Talleres</h5>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table id="tablaTalleres" class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-secondary">
+                            <tr>
+                                <th class="ps-4">Id</th>
+                                <th>Nombre</th>
+                                <th>Dirección</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in talleres %}
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-dark px-3">{{ t.cod_taller }}</span></td>
+                                <td class="text-start">{{ t.nombre_taller }}</td>
+                                <td class="text-start">{{ t.direccion }}</td>
+                                <td>
+                                    <span class="badge {% if t.estado == '1' or t.estado == 1 %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {% if t.estado == '1' or t.estado == 1 %}Activo{% else %}Inactivo{% endif %}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                        {% if tiene_permiso('Taller', 'p_actualizar') %}
+                                        <a href="{{ url_for('tallerbp.editar_taller', cod_taller=t.cod_taller) }}"
+                                           class="btn btn-sm btn-outline-primary"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="top"
+                                           title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        {% endif %}
+
+                                        {% if tiene_permiso('Taller', 'p_eliminar') %}
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger btn-eliminar-taller"
+                                                data-url="{{ url_for('tallerbp.eliminar_taller', cod_taller=t.cod_taller) }}"
+                                                data-nombre="{{ t.nombre_taller }}"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-5 mb-0">No hay talleres registrados.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="tablaTalleres" class="table table-hover align-middle text-center mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>Dirección</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for t in talleres %}
-                        <tr>
-                            <td>{{ t.cod_taller }}</td>
-                            <td>{{ t.nombre_taller }}</td>
-                            <td>{{ t.direccion }}</td>
-                            <td>
-                                {% if t.estado == '1' or t.estado == 1 %}
-                                    <span class="badge bg-success">Activo</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Inactivo</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if tiene_permiso('Taller', 'p_actualizar') %}
-                                <a href="{{ url_for('tallerbp.editar_taller', cod_taller=t.cod_taller) }}" class="btn btn-warning btn-sm">
-                                    Editar
-                                </a>
-                                {% endif %}
-
-                                {% if tiene_permiso('Taller', 'p_eliminar') %}
-                                <form action="{{ url_for('tallerbp.eliminar_taller', cod_taller=t.cod_taller) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Deseas desactivar este taller?');">
-                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                                </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" class="text-muted py-4">No hay talleres registrados.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="{{ url_for('static', filename='js/validar_taller.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-        <script>
+    
+    document.querySelectorAll('.btn-eliminar-taller').forEach(function(btn) {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url
+            const nombre = this.dataset.nombre || 'este taller'
+
+            Swal.fire({
+                title: '¿Deseas eliminar este taller?',
+                text: `Vas a inactivar ${nombre}.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form')
+                    form.method = 'POST'
+                    form.action = url
+                    document.body.appendChild(form)
+                    form.submit()
+                }
+            })
+        })
+    })
+
+    
+    /* {% with messages = get_flashed_messages(with_categories=true) %} */
+        /* {% if messages %} */
+            /* {% for category, message in messages %} */
             Swal.fire({
                 icon: "{{ 'error' if category == 'danger' else category }}",
                 title: "{{ 'Error' if category == 'danger' else category|capitalize }}",
@@ -95,9 +131,17 @@
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true
-            });
-        </script>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+            })
+            /* {% endfor %} */
+        /* {% endif %} */
+    /* {% endwith %} */
+})
+</script>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="{{ url_for('static', filename='js/validar_taller.js') }}"></script>
 {% endblock %}

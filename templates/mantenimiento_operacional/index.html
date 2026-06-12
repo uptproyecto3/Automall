@@ -1,119 +1,117 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
-<div class="container py-5">
+<div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-1">Mantenimiento Operacional</h2>
+            <h2 class="text-primary fw-bold">Mantenimiento Operacional</h2>
             <p class="text-muted mb-0">Control de ingresos, salidas y finalización de mantenimientos.</p>
         </div>
 
-
         <div class="d-flex gap-2 flex-wrap">
             {% if tiene_permiso('mantenimiento_operacional', 'p_crear') %}
-            <a href="{{ url_for('mantenimiento_operacional.crear_mantenimiento') }}" class="btn btn-primary rounded-pill px-4">
-                <i class="bi bi-plus-circle me-2"></i>Nuevo Mantenimiento
+            <a href="{{ url_for('mantenimiento_operacional.crear_mantenimiento') }}" class="btn btn-success rounded-pill px-4">
+                <i class="bi bi-plus-circle me-2"></i>Registrar Mantenimiento
             </a>
             {% endif %}
 
-
             {% if tiene_permiso('mantenimiento_operacional', 'p_leer') %}
-            <button type="button" class="btn btn-success rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalReporteMantenimiento">
+            <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalReporteMantenimiento">
                 <i class="bi bi-file-earmark-text me-2"></i>Reporte
             </button>
             {% endif %}
         </div>
     </div>
 
+    <div class="container-fluid mt-4 mb-5 px-0">
+        <div class="card shadow border-0" style="border-radius: 10px;">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-list-ul me-2"></i>Historial de Mantenimientos</h5>
+            </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table id="tablaMantenimientoOperacional" class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-secondary">
+                            <tr>
+                                <th class="ps-4">Id</th>
+                                <th>Descripción General</th>
+                                <th>Autoriza</th>
+                                <th>Estado</th>
+                                <th>Tipo</th>
+                                <th>Salida</th>
+                                <th>Entrega</th>
+                                <th>Placa</th>
+                                <th>Taller</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in mantenimientos %}
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-dark px-3">{{ m.cod_mantenimiento }}</span></td>
+                                <td class="text-start">{{ m.descripcion_general }}</td>
+                                <td class="text-start">{{ m.quien_autoriza }}</td>
+                                <td>
+                                    <span class="badge {% if m.estado == 'Activo' %}bg-warning text-dark{% elif m.estado == 'Finalizado' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ m.estado }}
+                                    </span>
+                                </td>
+                                <td>{{ m.tipo if m.tipo else '-' }}</td>
+                                <td>{{ m.fecha_salida if m.fecha_salida else '-' }}</td>
+                                <td>{{ m.fecha_entrega if m.fecha_entrega else '-' }}</td>
+                                <td>{{ m.placa if m.placa else '-' }}</td>
+                                <td class="text-start">{{ m.nombre_taller if m.nombre_taller else '-' }}</td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                        {% if m.estado == 'Activo' and m.placa and tiene_permiso('mantenimiento_operacional', 'p_actualizar') %}
+                                            
+                                            <a href="{{ url_for('mantenimiento_operacional.editar_mantenimiento', cod_mantenimiento=m.cod_mantenimiento) }}"
+                                               class="btn btn-sm btn-outline-primary"
+                                               data-bs-toggle="tooltip"
+                                               data-bs-placement="top"
+                                               title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger btn-eliminar-mantenimiento"
+                                                    data-url="{{ url_for('mantenimiento_operacional.inactivar_mantenimiento', cod_mantenimiento=m.cod_mantenimiento) }}"
+                                                    data-codigo="{{ m.cod_mantenimiento }}"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="top"
+                                                    title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-success btn-finalizar-mantenimiento"
+                                                    data-url="{{ url_for('mantenimiento_operacional.finalizar_mantenimiento', cod_mantenimiento=m.cod_mantenimiento, placa=m.placa) }}"
+                                                    data-codigo="{{ m.cod_mantenimiento }}"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="top"
+                                                    title="Finalizar">
+                                                <i class="bi bi-check2-circle"></i>
+                                            </button>
+
+                                        {% else %}
+                                            <span class="text-muted">Sin acciones</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if mantenimientos|length == 0 %}
+                    <p class="text-center text-muted py-5 mb-0">No hay mantenimientos registrados.</p>
+                    {% endif %}
                 </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="tablaMantenimientoOperacional" class="table table-hover align-middle text-center mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Código</th>
-                            <th>Descripción General</th>
-                            <th>Autoriza</th>
-                            <th>Estado</th>
-                            <th>Tipo</th>
-                            <th>Salida</th>
-                            <th>Entrega</th>
-                            <th>Placa</th>
-                            <th>Taller</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for m in mantenimientos %}
-                        <tr>
-                            <td>{{ m.cod_mantenimiento }}</td>
-                            <td class="text-start">{{ m.descripcion_general }}</td>
-                            <td>{{ m.quien_autoriza }}</td>
-                            <td>
-                                {% if m.estado == 'Activo' %}
-                                    <span class="badge bg-warning text-dark">Activo</span>
-                                {% elif m.estado == 'Finalizado' %}
-                                    <span class="badge bg-success">Finalizado</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">{{ m.estado }}</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ m.tipo if m.tipo else '-' }}</td>
-                            <td>{{ m.fecha_salida if m.fecha_salida else '-' }}</td>
-                            <td>{{ m.fecha_entrega if m.fecha_entrega else '-' }}</td>
-                            <td>{{ m.placa if m.placa else '-' }}</td>
-                            <td>{{ m.nombre_taller if m.nombre_taller else '-' }}</td>
-                            <td>
-                                {% if m.estado == 'Activo' and m.placa and tiene_permiso('mantenimiento_operacional', 'p_actualizar') %}
-                                <div class="d-inline-flex gap-1 flex-wrap justify-content-center">
-                                    <a href="{{ url_for('mantenimiento_operacional.editar_mantenimiento', cod_mantenimiento=m.cod_mantenimiento) }}" class="btn btn-primary btn-sm">
-                                        Editar
-                                    </a>
-
-                                    <form action="{{ url_for('mantenimiento_operacional.inactivar_mantenimiento', cod_mantenimiento=m.cod_mantenimiento) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Deseas inactivar este mantenimiento?');">
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            Eliminar
-                                        </button>
-                                    </form>
-
-                                    <form action="{{ url_for('mantenimiento_operacional.finalizar_mantenimiento', cod_mantenimiento=m.cod_mantenimiento, placa=m.placa) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Deseas finalizar este mantenimiento y reactivar el vehículo?');">
-                                        <button type="submit" class="btn btn-success btn-sm">
-                                            Finalizar
-                                </button>
-                                </form>
-                                </div>
-                                {% else %}
-                                    <span class="text-muted">Sin acciones</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-
-
-                {% if mantenimientos|length == 0 %}
-                <p class="text-center text-muted py-4 mb-0">No hay mantenimientos registrados.</p>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
-
 
 {% if tiene_permiso('mantenimiento_operacional', 'p_leer') %}
 <div class="modal fade" id="modalReporteMantenimiento" tabindex="-1" aria-labelledby="modalReporteMantenimientoLabel" aria-hidden="true">
@@ -124,36 +122,34 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
-
             <div class="modal-body">
                 <form action="{{ url_for('reporte_mantenimiento_operacional.generar_reporte_mantenimiento') }}" method="GET" target="_blank">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="cod_mantenimiento" class="form-label">Código de Mantenimiento:</label>
-                            <input type="number" class="form-control" id="cod_mantenimiento" name="cod_mantenimiento" placeholder="Ej: 1">
+                            <label for="placa" class="form-label fw-semibold">Vehículo (Placa):</label>
+                            <select class="form-select" id="placa" name="placa">
+                                <option value="">-- Todos los vehículos --</option>
+                                {% for v in vehiculos %}
+                                <option value="{{ v.placa }}">{{ v.placa }} - {{ v.estado }}</option>
+                                {% else %}
+                                <option value="">No hay vehículos disponibles</option>
+                                {% endfor %}
+                            </select>
                         </div>
 
-
                         <div class="col-md-6 mb-3">
-                            <label for="placa" class="form-label">Placa:</label>
-                            <input type="text" class="form-control" id="placa" name="placa" placeholder="Ej: ABC123">
-                        </div>
-                    </div>
-
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="estado" class="form-label">Estado:</label>
+                            <label for="estado" class="form-label fw-semibold">Estado:</label>
                             <select class="form-select" id="estado" name="estado">
                                 <option value="">-- Todos --</option>
                                 <option value="Activo">Activo</option>
                                 <option value="Finalizado">Finalizado</option>
                             </select>
                         </div>
+                    </div>
 
-
+                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="cod_taller" class="form-label">Taller:</label>
+                            <label for="cod_taller" class="form-label fw-semibold">Taller:</label>
                             <select class="form-select" id="cod_taller" name="cod_taller">
                                 <option value="">-- Todos los talleres --</option>
                                 {% for t in talleres %}
@@ -161,24 +157,21 @@
                                 {% endfor %}
                             </select>
                         </div>
-                    </div>
 
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_inicio" class="form-label fw-semibold">Fecha inicio:</label>
+                            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio">
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="fecha_inicio" class="form-label">Fecha inicio:</label>
-                            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio">
-                        </div>
-
-
-                        <div class="col-md-6 mb-3">
-                            <label for="fecha_fin" class="form-label">Fecha fin:</label>
+                            <label for="fecha_fin" class="form-label fw-semibold">Fecha fin:</label>
                             <input type="date" class="form-control" id="fecha_fin" name="fecha_fin">
                         </div>
                     </div>
 
-
-                    <div class="d-flex gap-2 justify-content-end">
+                    <div class="d-flex gap-2 justify-content-end mt-3">
                         <button type="submit" name="accion" value="ver" class="btn btn-outline-primary">
                             Imprimir
                         </button>
@@ -193,18 +186,69 @@
 </div>
 {% endif %}
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+   
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="{{ url_for('static', filename='js/validar_mantenimiento_operacional.js') }}"></script>
+    document.querySelectorAll('.btn-eliminar-mantenimiento').forEach(function(btn) {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url
+            const codigo = this.dataset.codigo || ''
 
+            Swal.fire({
+                title: '¿Deseas eliminar este mantenimiento?',
+                text: `Vas a inactivar el registro N° ${codigo}.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form')
+                    form.method = 'POST'
+                    form.action = url
+                    document.body.appendChild(form)
+                    form.submit()
+                }
+            })
+        })
+    })
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-        <script>
+    document.querySelectorAll('.btn-finalizar-mantenimiento').forEach(function(btn) {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url
+            const codigo = this.dataset.codigo || ''
+
+            Swal.fire({
+                title: '¿Deseas finalizar este mantenimiento?',
+                text: `Se finalizará el registro N° ${codigo} y se reactivará el vehículo.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, finalizar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form')
+                    form.method = 'POST'
+                    form.action = url
+                    document.body.appendChild(form)
+                    form.submit()
+                }
+            })
+        })
+    })
+
+    /* {% with messages = get_flashed_messages(with_categories=true) %} */
+        /* {% if messages %} */
+            /* {% for category, message in messages %} */
             Swal.fire({
                 icon: "{{ 'error' if category == 'danger' else category }}",
                 title: "{{ 'Error' if category == 'danger' else category|capitalize }}",
@@ -212,9 +256,17 @@
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true
-            });
-        </script>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+            })
+            /* {% endfor %} */
+        /* {% endif %} */
+    /* {% endwith %} */
+})
+</script>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="{{ url_for('static', filename='js/validar_mantenimiento_operacional.js') }}"></script>
 {% endblock %}
