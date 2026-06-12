@@ -1,36 +1,221 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models.citas import seleccionar
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from models.citas import citasModel
+from utils.decorators import login_required
+from utils.validaciones_citas import (
+    validar_registro_cita, 
+    validar_cambios_superusuario, 
+    validar_cambios_hora_cliente
+)
+
 citas_bp = Blueprint('citas', __name__)
 
-
-
+# ==========================================================================================
+# 🎯 VISTA UNIFICADA DE CONSULTA DE CITAS
+# ==========================================================================================
 @citas_bp.route('/consultar')
+@login_required
 def consultar():
-    
-    lista_citas = seleccionar.obtener_citas_transito()
+    cod_rol = session.get('cod_rol')
+    cedula_usuario = session.get('cedula_usuario')
+
+    # Bifurcación de lógica de obtención de datos según el rol
+    if cod_rol == 1:
+        # Super Usuario: Ve las citas de todos los usuarios
+        lista_citas = citasModel.obtener_citas_transito()
+    elif cod_rol == 4:
+        # Cliente: Solo ve sus propias citas
+        lista_citas = citasModel.obtener_por_cliente(cedula_usuario)
+    else:
+        # Roles no autorizados
+        flash("No tienes permisos para acceder a esta sección.", "danger")
+        return redirect(url_for('index'))
        
     return render_template('citas/consultar.html', citas=lista_citas)
 
+
+# ==========================================================================================
+# 🎯 AGENDAR NUEVA CITA
+# ==========================================================================================
 @citas_bp.route('/agendar', methods=['GET', 'POST'])
+@login_required
 def agendar():
+    cedula_usuario = session.get('cedula_usuario')
+    cod_rol = session.get('cod_rol')
+
+    # Solo Super Usuario (1) y Cliente (4) pueden agendar citas
+    if cod_rol not in [1, 4]:
+        flash("No tienes permisos para agendar citas.", "danger")
+        return redirect(url_for('citas.consultar'))
+    
     if request.method == 'POST':
         fecha = request.form.get('fecha_cita')
         hora = request.form.get('hora_cita')
         cod_catalogo = request.form.get('cod_catalogo')
-
-        if not fecha or not hora or not cod_catalogo:
-            flash("Por favor, complete todos los campos del formulario", "danger")
-            lista_vehiculos = seleccionar.obtener_todos()
-            return render_template('citas/agendar.html', seleccionar=lista_vehiculos)
-
-
-        seleccionar.registrar_citas(fecha, hora, cod_catalogo)
         
-        flash("¡Su cita ha sido agendada con éxito!", "success")
-        # 🌟 OBLIGATORIO: Redireccionamos a la vista de consulta tras registrar
-        return redirect(url_for('citas.consultar')) 
+        # Formatear datos para validación
+        datos_formulario = {
+            'fecha': fecha,
+            'hora': hora,
+            'cod_catalogo': cod_catalogo
+        }
 
-    # --- 🌟 BLOQUE GET (Cuando se entra a la página por primera vez) ---
-    lista_vehiculos = seleccionar.obtener_todos()
-    return render_template('citas/agendar.html', seleccionar=lista_vehiculos)
+        # 1. Contar citas en el horario seleccionado para control de aforo
+        total_concurrentes = citasModel.contar_citas_en_horario(fecha, hora)
 
+        # 2. Llamar a las utilidades de validación desacopladas
+        es_valido, errores = validar_registro_cita(datos_formulario, total_concurrentes)
+
+        if not es_valido:
+            for campo, mensaje in errores.items():
+                flash(f"⚠️ {mensaje}", "danger")
+            # Recargar el formulario pasando los datos ingresados para no perderlos
+            vehiculos_catalogo = citasModel.obtener_todos()
+            return render_template('citas/agendar.html', vehiculos=vehiculos_catalogo, datos=request.form)
+
+        # 3. Registrar cita en la base de datos si es válida
+        try:
+            citasModel.registrar_citas(fecha, hora, cod_catalogo, cedula_usuario)
+            flash("✨ ¡Cita agendada con éxito!", "success")
+            return redirect(url_for('citas.consultar'))
+        except Exception as e:
+            flash(f"❌ Error al agendar la cita: {str(e)}", "danger")
+            vehiculos_catalogo = citasModel.obtener_todos()
+            return render_template('citas/agendar.html', vehiculos=vehiculos_catalogo, datos=request.form)
+        
+    # Petición GET: Cargar listado de vehículos disponibles
+    vehiculos_catalogo = citasModel.obtener_todos()
+    return render_template('citas/agendar.html', vehiculos=vehiculos_catalogo)
+
+
+# ==========================================================================================
+# 🎯 ELIMINAR / CANCELAR CITA
+# ==========================================================================================
+@citas_bp.route('/eliminar/<int:cod_cita>', methods=['POST'])
+@login_required
+def eliminar_cita(cod_cita):
+    cod_rol = session.get('cod_rol')
+    cedula_usuario = session.get('cedula_usuario')
+
+    # Si es Cliente (4), intentará cancelar usando su cédula (solo citas pendientes suyas)
+    if cod_rol == 4:
+        resultado = citasModel.eliminar_cita_db(cod_cita, cedula_usuario=cedula_usuario)
+        if resultado['status']:
+            flash(resultado['mensaje'], "success")
+        else:
+            flash(resultado['mensaje'], "danger")
+    # Si es Super Usuario (1), tiene el borrado físico sin restricciones
+    elif cod_rol == 1:
+        resultado = citasModel.eliminar_cita_db(cod_cita)
+        if resultado['status']:
+            flash("✨ Cita eliminada del sistema con éxito.", "warning")
+        else:
+            flash(resultado['mensaje'], "danger")
+    else:
+        flash("No tienes permisos para realizar esta acción.", "danger")
+
+    return redirect(url_for('citas.consultar'))
+
+
+# ==========================================================================================
+# 🎯 MODIFICAR CITA (REPROGRAMAR)
+# ==========================================================================================
+@citas_bp.route('/modificar/<int:cod_cita>', methods=['POST'])
+@login_required
+def modificar(cod_cita):
+    cod_rol = session.get('cod_rol')
+    cedula_usuario = session.get('cedula_usuario')
+
+    # 1. Recuperar la información original de la cita en BD
+    cita_original = citasModel.obtener_cita_por_id(cod_cita)
+    if not cita_original:
+        flash("⚠️ No se pudo localizar la cita seleccionada.", "danger")
+        return redirect(url_for('citas.consultar'))
+
+    # 2. Controladores de seguridad según el Rol
+    if cod_rol == 4:
+        # CLIENTE: Validar propiedad estricta de la cita
+        citas_cliente = citasModel.obtener_por_cliente(cedula_usuario)
+        pertenece = any(int(c['cod_citas']) == int(cod_cita) for c in citas_cliente)
+        if not pertenece:
+            flash("Acceso denegado: No tienes autorización sobre esta cita.", "danger")
+            return redirect(url_for('citas.consultar'))
+
+        # El cliente solo puede modificar la hora. Mantenemos fecha y estado originales.
+        nueva_hora = request.form.get('hora')
+        fecha_cita = str(cita_original['fecha'])
+        estado_cita = str(cita_original['estado'])
+
+        # Contar citas simultáneas en la misma fecha y la nueva hora (excluyendo esta cita)
+        total_concurrentes = citasModel.contar_citas_en_horario(fecha_cita, nueva_hora, cod_cita_excluir=cod_cita)
+
+        # Validar lógica del cliente
+        es_valido, errores = validar_cambios_hora_cliente(
+            nueva_hora, fecha_cita, estado_cita, total_concurrentes
+        )
+
+        if not es_valido:
+            for campo, mensaje in errores.items():
+                flash(f"⚠️ {mensaje}", "danger")
+            return redirect(url_for('citas.consultar'))
+
+        # Preparar datos para actualización
+        datos_formulario = {
+            'cod_citas': cod_cita,
+            'fecha': fecha_cita,
+            'hora': nueva_hora,
+            'estado': estado_cita
+        }
+
+    elif cod_rol == 1:
+        # SUPER USUARIO: Puede modificar fecha, hora y estado
+        fecha_req = request.form.get('fecha') or str(cita_original['fecha'])
+        hora_req = request.form.get('hora') or str(cita_original['hora'])
+        estado_req = request.form.get('estado') or str(cita_original['estado'])
+
+        datos_formulario = {
+            'cod_citas': cod_cita,
+            'fecha': fecha_req,
+            'hora': hora_req,
+            'estado': estado_req
+        }
+
+        # Contar citas simultáneas en la nueva fecha y hora (excluyendo esta cita)
+        total_concurrentes = citasModel.contar_citas_en_horario(fecha_req, hora_req, cod_cita_excluir=cod_cita)
+
+        # Validar lógica del administrador
+        es_valido, errores = validar_cambios_superusuario(datos_formulario, total_concurrentes)
+
+        if not es_valido:
+            for campo, mensaje in errores.items():
+                flash(f"⚠️ {mensaje}", "danger")
+            return redirect(url_for('citas.consultar'))
+    else:
+        flash("No tienes permisos para modificar citas.", "danger")
+        return redirect(url_for('citas.consultar'))
+
+    # 3. Guardar cambios en BD
+    try:
+        citasModel.actualizar_cita(datos_formulario)
+        flash("✨ La cita ha sido reprogramada y actualizada con éxito.", "success")
+    except Exception as e:
+        flash(f"❌ Error al guardar modificaciones: {str(e)}", "danger")
+        
+    return redirect(url_for('citas.consultar'))
+
+
+# ==========================================================================================
+# 🎯 FINALIZAR CITA
+# ==========================================================================================
+@citas_bp.route('/finalizar/<int:cod_citas>', methods=['POST'])
+@login_required
+def finalizar_cita(cod_citas):
+    cod_rol = session.get('cod_rol')
+
+    # Solo el Super Usuario puede finalizar citas
+    if cod_rol != 1:
+        flash("Acceso denegado: Solo el Super Usuario puede finalizar citas.", "danger")
+        return redirect(url_for('citas.consultar'))
+
+    citasModel.finalizar_cita_db(cod_citas)
+    flash("✨ ¡La cita ha sido marcada como Finalizada!", "success")
+    return redirect(url_for('citas.consultar'))

@@ -26,6 +26,7 @@ from controllers.reporte_mantenimiento_operacional_controller import reporte_man
 from controllers.servicios_controller import servicios_bp
 from controllers.reporte_servicios_controller import reporte_servicios_bp
 from controllers.pago_controller import pagos_bp
+from controllers.clientes_controller import clientes_bp
 
 app = Flask(__name__)
 app.secret_key = '123456789' # nosec B105
@@ -49,6 +50,7 @@ app.register_blueprint(reporte_mantenimiento_operacional_bp)
 app.register_blueprint(servicios_bp)
 app.register_blueprint(reporte_servicios_bp)
 app.register_blueprint(pagos_bp)
+app.register_blueprint(clientes_bp)
 
 
 # --- CONTEXT PROCESSOR REFACTORIZADO Y SEGURO ---

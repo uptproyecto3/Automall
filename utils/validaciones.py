@@ -56,3 +56,59 @@ class ValidacionUsuario:
         if len(str(cedula)) < 6:
             return "La cédula es demasiado corta."
         return None
+
+    @staticmethod
+    def validar_foto_perfil(archivo):
+        """
+        Valida la foto de perfil subida:
+        - Extensión permitida: jpg, jpeg, png, webp
+        - Tamaño máximo: 5 MB
+        """
+        if not archivo or archivo.filename == '':
+            return None  # Foto opcional, no es un error
+
+        extensiones_permitidas = {'jpg', 'jpeg', 'png', 'webp'}
+        nombre = archivo.filename.lower()
+        extension = nombre.rsplit('.', 1)[-1] if '.' in nombre else ''
+
+        if extension not in extensiones_permitidas:
+            return "Formato de imagen no permitido. Use JPG, PNG o WEBP."
+
+        archivo.seek(0, 2)  # Ir al final del archivo
+        tamanio = archivo.tell()
+        archivo.seek(0)     # Regresar al inicio
+
+        if tamanio > 5 * 1024 * 1024:  # 5 MB
+            return "La imagen no puede superar los 5 MB."
+
+        return None
+
+    @staticmethod
+    def validar_modificacion_cliente(datos):
+        """
+        Valida los campos editables de un cliente.
+        Retorna (True, {}) si es válido, o (False, errores).
+        """
+        errores = {}
+
+        err = ValidacionUsuario.validar_nombre_apellido(datos.get('nombre'), "Nombre")
+        if err:
+            errores['nombre'] = err
+
+        err = ValidacionUsuario.validar_nombre_apellido(datos.get('apellido'), "Apellido")
+        if err:
+            errores['apellido'] = err
+
+        err = ValidacionUsuario.validar_telefono(datos.get('telefono'))
+        if err:
+            errores['telefono'] = err
+
+        err = ValidacionUsuario.validar_direccion(datos.get('direccion'))
+        if err:
+            errores['direccion'] = err
+
+        err = ValidacionUsuario.validar_formato_correo(datos.get('correo'))
+        if err:
+            errores['correo'] = err
+
+        return len(errores) == 0, errores
