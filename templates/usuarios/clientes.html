@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.bootstrap5.min.css') }}">
+
+<div class="container text-center mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="position-fixed top-0 end-0 mt-4 me-4" style="z-index: 1080; min-width: 320px; max-width: 450px;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-lg border-0 rounded-3 py-3 px-4 d-flex align-items-center justify-content-between mb-2" role="alert">
+                        <div class="d-flex align-items-center">
+                            <span class="fs-5 me-3">
+                                {% if category == 'success' %}<i class="bi bi-check-circle-fill text-success"></i>
+                                {% else %}<i class="bi bi-exclamation-triangle-fill text-danger"></i>{% endif %}
+                            </span>
+                            <strong class="small fw-semibold text-dark me-4">{{ message }}</strong>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="position:relative;top:0;right:0;padding:0.25rem;margin-left:auto;"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill me-2"></i>Gestion de Clientes</h2>
+        <a class="btn btn-success px-4 fw-bold shadow-sm d-flex align-items-center gap-2" href="{{ url_for('clientes.registrar_clientes') }}">
+            <i class="bi bi-person-plus-fill"></i> Registrar Nuevo Cliente
+        </a>
+    </div>
+
+    <div class="text-start">
+        <table class="table table-striped table-hover align-middle mb-0" id="tablaClientes">
+            <thead class="table-dark">
+                <tr>
+                    <th>Foto</th><th>Cedula</th><th>Nombre</th><th>Apellido</th>
+                    <th>Correo</th><th>Telefono</th><th>Direccion</th><th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td>
+                        {% if cliente.foto and cliente.foto != 'uploads/perfiles/default.png' %}
+                            <img src="{{ url_for('static', filename=cliente.foto) }}"
+                                 class="rounded-circle border shadow-sm"
+                                 style="width:42px;height:42px;object-fit:cover;" alt="{{ cliente.nombre }}">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center shadow-sm" style="width:42px;height:42px;">
+                                <i class="bi bi-person-fill text-white"></i>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge bg-secondary px-2">{{ cliente.cedula_usuario }}</span></td>
+                    <td>{{ cliente.nombre }}</td>
+                    <td>{{ cliente.apellido }}</td>
+                    <td>{{ cliente.correo }}</td>
+                    <td>{{ cliente.telefono }}</td>
+                    <td class="text-truncate" style="max-width:160px;" title="{{ cliente.direccion }}">{{ cliente.direccion }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-warning btn-editar-cliente rounded-start"
+                                    data-bs-toggle="modal" data-bs-target="#modalEditarCliente"
+                                    data-cedula="{{ cliente.cedula_usuario }}"
+                                    data-nombre="{{ cliente.nombre }}"
+                                    data-apellido="{{ cliente.apellido }}"
+                                    data-telefono="{{ cliente.telefono }}"
+                                    data-direccion="{{ cliente.direccion }}"
+                                    data-correo="{{ cliente.correo }}"
+                                    data-foto="{% if cliente.foto %}{{ url_for('static', filename=cliente.foto) }}{% endif %}"
+                                    title="Editar cliente"><i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-cliente rounded-end"
+                                    data-cedula="{{ cliente.cedula_usuario }}"
+                                    data-nombre="{{ cliente.nombre }} {{ cliente.apellido }}"
+                                    title="Eliminar cliente"><i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4"><i class="bi bi-info-circle"></i> No hay clientes registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-labelledby="modalEditarClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="modalEditarClienteLabel"><i class="bi bi-pencil-square text-warning me-2"></i>Editar Cliente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formEditarCliente" method="POST" enctype="multipart/form-data">
+                <div class="modal-body text-start">
+                    <div class="row g-4">
+                        <div class="col-12 text-center">
+                            <div class="d-flex justify-content-center mb-2">
+                                <div class="position-relative">
+                                    <div class="rounded-circle border shadow-sm overflow-hidden" style="width:90px;height:90px;">
+                                        <img id="preview-editar" src="#" class="w-100 h-100" style="object-fit:cover;" alt="Foto">
+                                    </div>
+                                    <label for="foto_perfil_editar" class="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0 d-flex align-items-center justify-content-center" style="width:30px;height:30px;cursor:pointer;">
+                                        <i class="bi bi-camera-fill" style="font-size:0.75rem;"></i>
+                                    </label>
+                                    <input type="file" name="foto_perfil" id="foto_perfil_editar" class="d-none" accept="image/*">
+                                </div>
+                            </div>
+                            <small class="text-muted">Haz clic en la camara para cambiar la foto (opcional)</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-muted">Cedula</label>
+                            <input type="text" id="editar_cedula_display" class="form-control bg-light" readonly disabled>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Nombre</label>
+                            <input type="text" name="nombre" id="editar_nombre" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Apellido</label>
+                            <input type="text" name="apellido" id="editar_apellido" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Correo Electronico</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="correo" id="editar_correo" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Telefono</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input type="tel" name="telefono" id="editar_telefono" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Direccion</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                <input type="text" name="direccion" id="editar_direccion" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-bold text-dark"><i class="bi bi-save me-1"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content text-center p-3 border-0 shadow">
+            <div class="modal-header border-0 d-flex justify-content-between align-items-center">
+                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Eliminar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="textoConfirmarEliminar" class="fs-5 text-secondary fw-semibold">Esta seguro de eliminar a este cliente de forma permanente?</p>
+            </div>
+            <div class="modal-footer border-0 d-flex justify-content-center gap-2">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">No, Cancelar</button>
+                <form id="formEliminarCliente" method="POST">
+                    <button type="submit" class="btn btn-danger px-4 fw-bold"><i class="bi bi-trash me-1"></i> Si, Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/clientes.js') }}"></script>
+{% endblock %}

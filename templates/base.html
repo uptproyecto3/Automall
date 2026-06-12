@@ -124,7 +124,7 @@
                                 <li><a class="dropdown-item" href="{{ url_for('proveedores.lista') }}"><i class="bi bi-calendar-event me-2"></i>Proveedores</a></li>
                             {% endif %}
                             {% if tiene_permiso('Clientes', 'p_leer') %}
-                                <li><a class="dropdown-item" href="/usuarios/cliente"><i class="bi bi-cash-stack me-2"></i>Clientes</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('clientes.listar_clientes') }}"><i class="bi bi-cash-stack me-2"></i>Clientes</a></li>
                             {% endif %}
                             {% if tiene_permiso('Vendedor', 'p_leer') %}
                                 <li><a class="dropdown-item" href="/usuarios/vendedor"><i class="bi bi-calendar-event me-2"></i>Vendedores</a></li>
