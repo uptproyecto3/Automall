@@ -14,7 +14,7 @@ from controllers.vehiculos_controller import vehiculos_bp
 from controllers.catalogo_controller import catalogo_bp
 from controllers.marca_controller import marca_bp
 from controllers.modelo_controller import modelo_bp
-from controllers.proveedor_controller import proveedor_bp 
+from controllers.propietario_controller import propietario_bp 
 from controllers.venta_controller import ventas_bp 
 from controllers.citas_controller import citas_bp 
 from controllers.permisos_controller import permisos_bp
@@ -27,6 +27,10 @@ from controllers.servicios_controller import servicios_bp
 from controllers.reporte_servicios_controller import reporte_servicios_bp
 from controllers.pago_controller import pagos_bp
 from controllers.clientes_controller import clientes_bp
+from controllers.vendedor_controller import vendedor_bp
+from controllers.compra_controller import compra_bp
+from controllers.insumo_controller import insumo_bp
+from controllers.tasa_controller import tasa_bp
 
 app = Flask(__name__)
 app.secret_key = '123456789' # nosec B105
@@ -38,7 +42,7 @@ app.register_blueprint(vehiculos_bp)
 app.register_blueprint(catalogo_bp)
 app.register_blueprint(marca_bp)
 app.register_blueprint(modelo_bp)
-app.register_blueprint(proveedor_bp)
+app.register_blueprint(propietario_bp)
 app.register_blueprint(citas_bp)
 app.register_blueprint(permisos_bp)
 app.register_blueprint(bitacora_bp)
@@ -51,7 +55,10 @@ app.register_blueprint(servicios_bp)
 app.register_blueprint(reporte_servicios_bp)
 app.register_blueprint(pagos_bp)
 app.register_blueprint(clientes_bp)
-
+app.register_blueprint(vendedor_bp)
+app.register_blueprint(compra_bp)
+app.register_blueprint(insumo_bp)
+app.register_blueprint(tasa_bp)
 
 # --- CONTEXT PROCESSOR REFACTORIZADO Y SEGURO ---
 @app.context_processor

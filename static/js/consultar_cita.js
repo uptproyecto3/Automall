@@ -1,11 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
 
-    // 🌟 0. Evitar que DataTables muestre alertas molestas en el navegador y las registre en la consola
+
     if (typeof $.fn.dataTable !== 'undefined') {
         $.fn.dataTable.ext.errMode = 'throw';
     }
 
-    // 🌟 1. Inicialización de Flatpickr para la FECHA (Solo si no es de solo lectura)
     const inputFecha = document.getElementById("modal_fecha");
     let fpFecha = null;
     
@@ -19,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // 🌟 2. Inicialización de Flatpickr para la HORA
+
     const fpHora = flatpickr("#modal_hora", {
         locale: "es",
         enableTime: true,
@@ -31,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function() {
         maxTime: "18:00"
     });
 
-    // 🌟 3. Inicializar DataTables
+
     const tablaCitasElemento = $('#tablaCitas');
     if (tablaCitasElemento.length > 0) {
         tablaCitasElemento.DataTable({
@@ -51,12 +50,9 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // =========================================================
-    // 🎯 CONTROL DE EVENTOS (CON ENFOQUE DE DELEGACIÓN PARA DATATABLES)
-    // =========================================================
+  
     if (tablaCitasElemento.length > 0) {
         
-        // --- 1. FLUJO ELIMINAR / CANCELAR CITAS ---
         tablaCitasElemento.on('click', '.btn-cancelar-cita', function(e) {
             e.preventDefault();
             const idDetectado = this.getAttribute('data-cod');
@@ -68,7 +64,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     btnAceptarModal.setAttribute('data-accion-tipo', 'eliminar');
                 }
 
-                // Ajustamos el texto si es una cancelación de cliente o eliminación administrativa
                 const esCliente = document.getElementById('modal_estado') === null || document.getElementById('modal_estado').type === 'hidden';
                 const tituloAccion = esCliente ? 'Cancelar Cita' : 'Eliminar Cita';
                 const descAccion = esCliente ? 
@@ -92,7 +87,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // --- 2. FLUJO FINALIZAR CITA ---
         tablaCitasElemento.on('click', '.btn-disparar-finalizar', function(e) {
             e.preventDefault();
             const btnFinalizar = $(this);
@@ -120,7 +114,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // --- 3. ACCIÓN DEL BOTÓN CONTINUAR DEL MODAL UNIVERSAL (POST DINÁMICO) ---
         $(document).on('click', '#btnAceptarConfirmacionUniversal', function(e) {
             e.preventDefault();
             const btnConfirmar = $(this);
@@ -152,7 +145,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // --- 4. FLUJO MODIFICAR (Carga datos al modal de edición) ---
         tablaCitasElemento.on('click', '.btn-editar-cita', function() {
             const btn = $(this);
             const codCita = btn.attr('data-cod');
@@ -179,16 +171,13 @@ document.addEventListener("DOMContentLoaded", function() {
             $('#formModificarCita').attr('action', `/modificar/${codCita}`);
         });
 
-        // --- 5. FLUJO VER FOTO DEL VEHÍCULO ---
         $(document).on('click', '.btn-ver-foto', function() {
             const urlImagen = $(this).attr('data-imagen');
             const tituloVehiculo = $(this).attr('data-titulo') || 'Foto del Vehículo';
 
-            // Actualizar título del modal
             const elTitulo = document.getElementById('tituloFotoVehiculo');
             if (elTitulo) elTitulo.textContent = tituloVehiculo;
 
-            // Inyectar imagen o mensaje
             const elCuerpo = document.getElementById('cuerpoFotoVehiculo');
             if (elCuerpo) {
                 if (urlImagen && urlImagen.trim() !== '') {
@@ -204,7 +193,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // 🌟 4. Ocultar notificaciones flash automáticamente tras 5 segundos (Usando Bootstrap 5 nativo)
     setTimeout(function() {
         const alertas = document.querySelectorAll('.alert');
         alertas.forEach(function(alerta) {
@@ -219,9 +207,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 
-// =========================================================
-// 🎨 HELPER: Renderizar textos y colores del Modal Alerta
-// =========================================================
+
 function abrirModalAlertaUniversal(titulo, textoBody, clasesBoton, textoBoton) {
     const elTitulo = document.getElementById('tituloConfirmacionUniversal');
     const elTexto = document.getElementById('textoConfirmacionUniversal');

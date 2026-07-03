@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Compra{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="bi bi-cart-plus"></i> Nueva Compra de Insumos</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Una vez creada la compra, podrá agregar los insumos y detalles.
+                        </div>
+                        
+                        <div class="text-end">
+                            <a href="{{ url_for('compras.listar') }}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Crear Compra
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

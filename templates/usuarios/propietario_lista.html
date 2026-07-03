@@ -4,9 +4,9 @@
 <div class="container mt-4">
     <div class="card shadow border-0">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center p-3">
-            <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i>Listado de Proveedores</h4>
-            <a href="{{ url_for('proveedores.registro') }}" class="btn btn-primary shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i> Agregar Proveedor
+            <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i>Listado de Propietarios</h4>
+            <a href="{{ url_for('propietarios.registro') }}" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Agregar Propietario
             </a>
         </div>
         <div class="card-body">
@@ -24,9 +24,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for p in proveedores %}
+                        {% for p in propietarios %}
                         <tr>
-                            <td class="text-muted">{{ p.cedula_proveedor }}</td>
+                            <td class="text-muted">{{ p.cedula_propietario }}</td>
                             <td class="fw-bold">{{ p.razon_social }}</td>
                             <td>{{ p.telefono }}</td>
                             <td class="small">{{ p.direccion }}</td>
@@ -38,9 +38,9 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group shadow-sm">
-                                    <a href="{{ url_for('proveedores.eliminar', cedula=p.cedula_proveedor) }}" 
+                                    <a href="{{ url_for('propietarios.eliminar', cedula=p.cedula_propietario) }}" 
                                        class="btn btn-sm btn-outline-danger" 
-                                       onclick="return confirm('¿Eliminar este proveedor?')">
+                                       onclick="return confirm('¿Eliminar este propietario?')">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </div>

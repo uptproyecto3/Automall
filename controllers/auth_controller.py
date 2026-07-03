@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from models.auth import Auth 
 
 auth_bp = Blueprint('auth', __name__) 
@@ -8,29 +8,38 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        correo = request.form.get('email')
-        password = request.form.get('password')
+        # Como recibimos datos vía Fetch (JSON), usamos get_json()
+        datos = request.get_json()
         
-        # El modelo ahora valida internamente tanto el formato como el hash seguro
+        if not datos:
+            return jsonify({"status": "error", "message": "Datos de petición inválidos."}), 400
+            
+        correo = datos.get('email')
+        password = datos.get('password')
+        
         usuario = Auth.verificar_credenciales(correo, password)
         
-        # 1. Validar si el modelo devolvió un error de validación de formato (de utils)
         if isinstance(usuario, dict) and 'error' in usuario:
-            flash(usuario['error'], "warning")
-            return render_template('auth/login.html')
+            return jsonify({"status": "error", "message": usuario['error']})
 
-        # 2. Si las credenciales pasaron el check_password_hash (devolvió los datos del usuario)
         if usuario:
             session['cedula_usuario'] = usuario['cedula_usuario']
             session['usuario_nombre'] = usuario['nombre']
             session['cod_rol'] = usuario['cod_rol']
             
-            flash(f"Bienvenido, {usuario['nombre']}", "success")
-            return redirect(url_for('index'))
+            # Retornamos éxito, la URL de redirección y el nombre del usuario
+            return jsonify({
+                "status": "success", 
+                "redirect": url_for('index'),
+                "nombre": usuario['nombre']
+            })
         else:
-            # 3. Si retornó None, significa que el correo no existe o el hash no coincidió
-            flash("Correo o contraseña incorrectos.", "danger")
+            return jsonify({
+                "status": "error", 
+                "message": "Correo o contraseña incorrectos."
+            })
             
+    # Si es GET, simplemente renderiza la vista
     return render_template('auth/login.html')
 
 

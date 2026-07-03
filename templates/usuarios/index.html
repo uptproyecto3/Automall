@@ -13,6 +13,7 @@
                 <th>Teléfono</th>
                 <th>Dirección</th>
                 <th>Correo</th>
+                <th>Rol</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -24,6 +25,9 @@
                 <td>{{ u.apellido }}</td>
                 <td>{{ u.telefono }}</td>
                 <td>{{ u.direccion }}</td>
+                <td>
+                    <span class="badge bg-info text-dark">{{ u.rol }}</span>
+                </td>
                 <td>{{ u.correo }}</td>
                 
                 <td>

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Insumos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-box-seam"></i> Insumos de Vehiculos</h2>
+        {% if tiene_permiso('Insumos', 'p_crear') %}
+        <a href="{{ url_for('insumos.nuevo') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Insumo
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Stock</th>
+                            <th>Estado Stock</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in insumos %}
+                        <tr>
+                            <td>{{ i.cod_insumo }}</td>
+                            <td>{{ i.nombre_insumo }}</td>
+                            <td>{{ i.descripcion or '-' }}</td>
+                            <td>{{ i.stock }}</td>
+                            <td>
+                                {% if i.stock <= 0 %}
+                                    <span class="badge bg-danger">Agotado</span>
+                                {% elif i.stock <= 5 %}
+                                    <span class="badge bg-warning">Bajo Stock</span>
+                                {% else %}
+                                    <span class="badge bg-success">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ i.cod_insumo }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                {% if tiene_permiso('Insumos', 'p_eliminar') %}
+                                <a href="{{ url_for('insumos.eliminar', cod_insumo=i.cod_insumo) }}" 
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('¿Eliminar este insumo? Se eliminarán también las compras asociadas.')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Modal de Edición -->
+                        <div class="modal fade" id="editModal{{ i.cod_insumo }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-warning">
+                                        <h5 class="modal-title">Editar Insumo</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('insumos.editar', cod_insumo=i.cod_insumo) }}">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label>Nombre *</label>
+                                                <input type="text" name="nombre" class="form-control" value="{{ i.nombre_insumo }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label>Descripción</label>
+                                                <textarea name="descripcion" class="form-control" rows="2">{{ i.descripcion or '' }}</textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label>Stock</label>
+                                                <input type="number" name="stock" class="form-control" value="{{ i.stock }}" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-warning">Guardar Cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

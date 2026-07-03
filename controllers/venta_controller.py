@@ -4,6 +4,7 @@ from models.ventas import Ventas
 from models.user import Usuario
 from models.vehiculo import Vehiculo
 from utils.decorators import login_required
+from utils.permisos import requiere_permiso
 
 ventas_bp = Blueprint('ventas', __name__)
 
@@ -15,23 +16,18 @@ def vista_registro():
     metodos_pago = Ventas.obtener_metodos_pago()
     monedas = Ventas.obtener_monedas()
     monedas_digitales = Ventas.obtener_moneda_digital()
+    vehiculos = Vehiculo.obtener_vehiculos_disponibles()
 
-    return render_template('ventas/registrar_venta.html', bancos=bancos, metodos_pago=metodos_pago, monedas=monedas, monedas_digitales=monedas_digitales)
+    return render_template('ventas/registrar_venta.html', bancos=bancos, metodos_pago=metodos_pago, monedas=monedas, monedas_digitales=monedas_digitales, vehiculos=vehiculos)
 
 @ventas_bp.route('/ventas/api/cliente/<int:cedula>', methods=['GET'])
 @login_required
 def api_buscar_cliente(cedula):
-    cliente = Usuario.buscar_cliente_por_cedula(cedula)
+    # El modelo ahora se encarga de buscar y estructurar todo el diccionario
+    respuesta = Usuario.buscar_cliente_por_cedula(cedula)
     
-    if cliente:
-        return jsonify({
-            'exito': True,
-            'nombre_completo': f"{cliente['nombre']} {cliente['apellido']}",
-            'cedula': cliente['cedula_usuario'],
-            'telefono': cliente['telefono'],
-            'direccion': cliente['direccion'],
-            'correo': cliente['correo']
-        })
+    if respuesta:
+        return jsonify(respuesta)
     else:
         return jsonify({
             'exito': False, 
@@ -41,22 +37,11 @@ def api_buscar_cliente(cedula):
 @ventas_bp.route('/ventas/api/vehiculo/<string:placa>', methods=['GET'])
 @login_required
 def api_buscar_vehiculo(placa):
-    vehiculo = Vehiculo.buscar_por_placa(placa)
+    # El modelo ahora se encarga de buscar, limpiar y formatear el vehículo
+    respuesta = Vehiculo.buscar_por_placa(placa)
     
-    if vehiculo:
-        return jsonify({
-            'exito': True,
-            'vehiculo': {
-                'placa': vehiculo['placa'],
-                'marca': vehiculo['marca'],
-                'modelo': vehiculo['modelo'],
-                'tipo': vehiculo['tipo'],
-                'anio': vehiculo['anio'],
-                'color': vehiculo['color'],
-                'precio': float(vehiculo['precio']),
-                'estado': vehiculo['estado']
-            }
-        })
+    if respuesta:
+        return jsonify(respuesta)
     else:
         return jsonify({
             'exito': False,
@@ -67,17 +52,15 @@ def api_buscar_vehiculo(placa):
 # --- RUTA 2: PARA PROCESAR EL GUARDADO ---
 @ventas_bp.route('/ventas/registrar_venta', methods=['POST'])
 @login_required
+@requiere_permiso('Ventas', 'p_crear')
 def registrar_venta():
-    # Recibimos los datos en formato JSON desde el fetch
     data = request.get_json()
     
     if not data:
         return jsonify({"exito": False, "mensaje": "No se recibieron datos"})
 
-    # Creamos la instancia del modelo pasando el diccionario completo
     nueva_venta = Ventas(data)
 
-    # Ejecutamos el método registrar que contiene la transacción
     resultado = nueva_venta.registrar()
 
     if resultado["status"]:
@@ -87,7 +70,28 @@ def registrar_venta():
     
 @ventas_bp.route('/ventas/lista_ventas')
 @login_required
+@requiere_permiso('Ventas', 'p_leer')
 def listado_ventas():
-    # Obtenemos los datos desde el modelo
     ventas = Ventas.obtener_todas()
     return render_template('ventas/lista_ventas.html', ventas=ventas)
+
+@ventas_bp.route('/ventas/eliminar/<int:id>')
+@login_required
+@requiere_permiso('Ventas', 'p_eliminar')
+def eliminar_venta(id):
+    if Ventas.eliminar(id):
+        flash("Venta eliminada y vehículo liberado con éxito.", "success")
+    else:
+        flash("Error al eliminar la venta.", "danger")
+    return redirect(url_for('ventas.listado_ventas'))
+
+@ventas_bp.route('/ventas/editar', methods=['POST'])
+@login_required
+@requiere_permiso('Ventas', 'p_actualizar')
+def editar_venta():
+    data = request.form.to_dict()
+    if Ventas.actualizar(data):
+        flash("Venta actualizada correctamente.", "success")
+    else:
+        flash("Error al actualizar la venta.", "danger")
+    return redirect(url_for('ventas.listado_ventas'))

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-4 rounded-4 shadow-sm border-0">
+        <div>
+            <h2 class="fw-bold text-dark mb-0"><i class="bi bi-wallet2 text-primary me-2"></i>Control General de Pagos</h2>
+            <p class="text-muted small mb-0 mt-1">Monitoreo administrativo de abonos y cuentas de clientes</p>
+        </div>
+        <a href="{{ url_for('pagos.registrar_pago') }}" class="btn btn-primary shadow-sm px-4 fw-bold">
+            <i class="bi bi-plus-lg me-2"></i>Nuevo Abono
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small text-uppercase">
+                    <tr>
+                        <th class="px-4 py-3">Cliente</th>
+                        <th class="py-3">Contacto</th>
+                        <th class="py-3">Vehículo (Placa)</th>
+                        <th class="py-3">Detalle del Pago</th>
+                        <th class="py-3 text-center">Estado de Cuenta</th>
+                        <th class="px-4 py-3 text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pagos %}
+                    <tr>
+                        <td class="px-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center me-3 fw-bold" style="width: 40px; height: 40px;">
+                                    {{ p.nombre[0] }}{{ p.apellido[0] }}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark">{{ p.nombre }} {{ p.apellido }}</h6>
+                                    <small class="text-muted">C.I: {{ p.cedula_usuario }}</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="small">
+                                <span class="d-block"><i class="bi bi-telephone text-muted me-1"></i> {{ p.telefono }}</span>
+                                <span class="d-block text-truncate text-muted" style="max-width: 150px;" title="{{ p.direccion }}"><i class="bi bi-geo-alt text-muted me-1"></i> {{ p.direccion }}</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-dark bg-opacity-10 text-dark border px-2 py-1"><i class="bi bi-car-front me-1"></i> {{ p.placa }}</span>
+                        </td>
+
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold text-success fs-6">${{ "{:,.2f}".format(p.monto_abonado) }}</span>
+                                <small class="text-muted">{{ p.fecha_pago.strftime('%d/%m/%Y') }} • {{ p.nombre_metodo }}</small>
+                                {% if p.referencia %}
+                                    <small class="text-secondary" style="font-size: 0.75rem;">Ref: {{ p.referencia }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td class="text-center">
+                            {% if p.estado_cuenta == 'pagado' %}
+                                <span class="badge bg-success rounded-pill px-3 mb-1">Totalmente Pagado</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark rounded-pill px-3 mb-1">Saldo Pendiente</span>
+                            {% endif %}
+                            
+                            {% set total = p.deuda_total | float %}
+                            {% set pagado = (p.deuda_total - p.saldo_pendiente) | float %}
+                            {% set porcentaje = (pagado / total * 100) if total > 0 else 0 %}
+                            
+                            <div class="progress mx-auto mt-1" style="height: 5px; width: 80px;">
+                                <div class="progress-bar {% if porcentaje == 100 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ porcentaje }}%"></div>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.7rem;">Restan: ${{ "{:,.2f}".format(p.saldo_pendiente) }}</small>
+                        </td>
+
+                        <td class="px-4 text-end">
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm rounded-circle shadow-sm border" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                    {% if tiene_permiso('Pagos', 'p_eliminar') %}
+                                    <li><a class="dropdown-item fw-medium" href="javascript:void(0)" onclick="abrirModalEditar('{{ p.cod_pagos }}', '{{ p.monto_abonado }}', '{{ p.descripcion }}', '{{ p.referencia }}')"><i class="bi bi-pencil me-2 text-warning"></i> Editar Pago</a></li>
+                                    {% endif %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    
+                                    {% if tiene_permiso('Pagos', 'p_eliminar') %}
+                                    <li><a class="dropdown-item fw-medium text-danger" href="javascript:void(0)" onclick="confirmarAnulacion('{{ p.cod_pagos }}')"><i class="bi bi-x-circle me-2"></i> Anular Pago</a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    {% if not pagos %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                            <h5 class="text-muted fw-bold">No hay pagos registrados</h5>
+                            <p class="text-muted small">Los abonos de los clientes aparecerán aquí.</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditarPago" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ url_for('pagos.editar_pago') }}" method="POST">
+                <div class="modal-header bg-warning text-dark border-0">
+                    <h5 class="modal-title fw-bold">Modificar Abono</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" name="cod_pagos" id="edit_cod_pagos">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Monto del Abono ($)</label>
+                        <input type="number" step="0.01" name="monto_abonado" id="edit_monto" class="form-control bg-light" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Referencia / TXID</label>
+                        <input type="text" name="referencia" id="edit_ref" class="form-control bg-light">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Descripción / Nota Interna</label>
+                        <textarea name="descripcion" id="edit_desc" class="form-control bg-light" rows="2"></textarea>
+                    </div>
+                    <input type="hidden" name="cod_metodo" value="1"> 
+                    <input type="hidden" name="cod_moneda" value="1">
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-white border" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function abrirModalEditar(id, monto, desc, ref) {
+    document.getElementById('edit_cod_pagos').value = id;
+    document.getElementById('edit_monto').value = monto;
+    document.getElementById('edit_desc').value = desc !== 'None' ? desc : '';
+    document.getElementById('edit_ref').value = ref !== 'None' ? ref : '';
+    
+    var modal = new bootstrap.Modal(document.getElementById('modalEditarPago'));
+    modal.show();
+}
+
+function confirmarAnulacion(id) {
+    Swal.fire({
+        title: '¿Anular este Pago?',
+        text: "El pago se desactivará del sistema y el monto se sumará de nuevo al saldo pendiente del cliente.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, anular abono',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true,
+        customClass: {
+            confirmButton: 'rounded-pill px-4',
+            cancelButton: 'rounded-pill px-4'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Sigue viajando a la misma ruta del controlador, pero la ejecución interna ya es segura
+            window.location.href = "/pagos/eliminar/" + id;
+        }
+    });
+}
+</script>
+
+<style>
+    body { background-color: #f8f9fa; }
+    .table > :not(caption) > * > * { border-bottom-color: #f1f1f1; }
+    .table tbody tr { transition: background-color 0.2s ease; }
+    .table tbody tr:hover { background-color: #f8f9fa; }
+    .form-control:focus { box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25); border-color: #ffc107; }
+</style>
+{% endblock %}

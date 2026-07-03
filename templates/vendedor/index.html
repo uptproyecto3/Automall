@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Vendedores{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people"></i> Gestión de Vendedores</h2>
+        {% if tiene_permiso('Usuarios', 'p_crear') %}
+        <a href="{{ url_for('vendedor.registrar') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Vendedor
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Cédula</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Teléfono</th>
+                            <th>Dirección</th>
+                            <th>Correo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in vendedores %}
+                        <tr>
+                            <td>{{ v.cedula_usuario }}</td>
+                            <td>{{ v.nombre }}</td>
+                            <td>{{ v.apellido }}</td>
+                            <td>{{ v.telefono }}</td>
+                            <td>{{ v.direccion }}</td>
+                            <td>{{ v.correo }}</td>
+                            <td>
+                                {% if v.estado == 1 %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- Botón Ver -->
+                                <a href="{{ url_for('vendedor.ver', cedula=v.cedula_usuario|string) }}" class="btn btn-sm btn-info">
+    <i class="bi bi-eye"></i>
+</a>
+                                
+                                <!-- Botón Editar (modal) -->
+                                {% if tiene_permiso('Usuarios', 'p_actualizar') %}
+                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ v.cedula_usuario }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                {% endif %}
+                                
+                                <!-- Botón Cambiar Estado -->
+                                {% if tiene_permiso('Usuarios', 'p_eliminar') %}
+                                <a href="{{ url_for('vendedor.cambiar_estado', cedula=v.cedula_usuario) }}" class="btn btn-sm btn-secondary" onclick="return confirm('¿Cambiar estado del vendedor?')">
+                                    <i class="bi bi-toggle-{{ 'off' if v.estado == 1 else 'on' }}"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Modal de Edición para cada vendedor -->
+                        {% if tiene_permiso('Usuarios', 'p_actualizar') %}
+                        <div class="modal fade" id="editModal{{ v.cedula_usuario }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-warning">
+                                        <h5 class="modal-title">Editar Vendedor: {{ v.nombre }} {{ v.apellido }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('vendedor.editar', cedula=v.cedula_usuario) }}">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label>Nombre</label>
+                                                <input type="text" name="nombre" class="form-control" value="{{ v.nombre }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label>Apellido</label>
+                                                <input type="text" name="apellido" class="form-control" value="{{ v.apellido }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label>Teléfono</label>
+                                                <input type="text" name="telefono" class="form-control" value="{{ v.telefono }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label>Dirección</label>
+                                                <textarea name="direccion" class="form-control" rows="2" required>{{ v.direccion }}</textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label>Correo</label>
+                                                <input type="email" name="email" class="form-control" value="{{ v.correo }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-warning">Guardar Cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

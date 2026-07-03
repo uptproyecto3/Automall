@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle del Vendedor{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-user"></i> Información del Vendedor</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr><th>Cédula:</th><td>{{ vendedor.cedula_usuario }}</td></tr>
+                        <tr><th>Nombre:</th><td>{{ vendedor.nombre }} {{ vendedor.apellido }}</td></tr>
+                        <tr><th>Teléfono:</th><td>{{ vendedor.telefono }}</td></tr>
+                        <tr><th>Correo:</th><td>{{ vendedor.correo }}</td></tr>
+                        <tr><th>Dirección:</th><td>{{ vendedor.direccion }}</td></tr>
+                        <tr><th>Rol:</th><td>{{ vendedor.nombre_rol }}</td></tr>
+                        <tr><th>Estado:</th>
+                            <td>
+                                {% if vendedor.estado == 1 %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{{ url_for('vendedor.listar') }}" class="btn btn-secondary">Volver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

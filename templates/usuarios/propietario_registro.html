@@ -6,10 +6,10 @@
         <div class="col-md-7">
             <div class="card shadow border-0">
                 <div class="card-header bg-primary text-white p-3">
-                    <h4 class="mb-0 text-center"><i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Proveedor</h4>
+                    <h4 class="mb-0 text-center"><i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Propietario</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form action="{{ url_for('proveedores.registro') }}" method="POST" class="row g-3">
+                    <form action="{{ url_for('propietarios.registro') }}" method="POST" class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Cédula / RIF</label>
                             <input type="number" name="cedula" class="form-control" placeholder="Ej: 27123456" required>
@@ -23,7 +23,7 @@
                             <input type="text" name="telefono" class="form-control" placeholder="04xx-xxxxxxx">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Tipo de Proveedor</label>
+                            <label class="form-label fw-bold">Tipo de Propietario</label>
                             <select name="tipo" class="form-select">
                                 <option value="Natural">Persona Natural</option>
                                 <option value="Jurídico">Persona Jurídica</option>
@@ -43,8 +43,8 @@
                         <div class="col-12 mt-4">
                             <button type="submit" class="btn btn-success w-100 shadow-sm py-2 fw-bold">Finalizar Registro</button>
                             <div class="text-center mt-3">
-                                <a href="{{ url_for('proveedores.lista') }}" class="text-decoration-none text-muted">
-                                    <i class="bi bi-arrow-left"></i> Ver listado de proveedores
+                                <a href="{{ url_for('propietarios.lista') }}" class="text-decoration-none text-muted">
+                                    <i class="bi bi-arrow-left"></i> Ver listado de propietarios
                                 </a>
                             </div>
                         </div>

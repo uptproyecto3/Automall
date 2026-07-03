@@ -103,7 +103,8 @@ def editar(cedula_usuario):
     
     if resultado['status']:
         flash(resultado['mensaje'], "success")
-        Bitacora.registrar(session['cedula_usuario'], f"Actualizó al Usuario ID: {cedula_usuario}", "Usuarios")
+        #Este es el llamado a la bitacora
+        Bitacora.registrar(session['cedula_usuario'], f"Actualizó al Usuario ID: {cedula_usuario}", "Usuarios") 
     else:
         # Aquí se mostrarán los errores de validación de formato o correo duplicado
         flash(resultado['mensaje'], "danger")

@@ -1,84 +1,270 @@
 /**
  * Automall del Centro - Módulo de Ventas
- * Manejo de lógica de interfaz y cálculos dinámicos (Versión Producción)
+ * Manejo de lógica de interfaz y cálculos dinámicos (Versión Producción Modificada)
  */
-document.getElementById('form-venta').addEventListener('submit', function(e) {
-    e.preventDefault(); // Detener el envío tradicional
-
-    // Validaciones previas
-    const cedula = document.getElementById('id_cliente_hidden').value;
-    const placa = document.getElementById('id_vehiculo_hidden').value;
-    
-    if (!cedula || !placa) {
-        alert("Error: Debe seleccionar un cliente y un vehículo válidos.");
-        return;
-    }
-
-    // Recopilar datos del formulario
-    const formData = new FormData(this);
-    
-    // Antes de enviar, nos aseguramos de que los campos deshabilitados se incluyan
-    const selectBanco = document.getElementById('cod_banco');
-    const bancoHabilitadoOriginalmente = !selectBanco.disabled;
-    selectBanco.disabled = false; 
-
-    const data = {};
-    formData.forEach((value, key) => {
-        data[key] = value;
-    });
-
-    // Restaurar estado del select si es necesario
-    if(!bancoHabilitadoOriginalmente) selectBanco.disabled = true;
-
-    // Enviar por FETCH
-    fetch(this.action, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(res => {
-        if (res.exito) {
-            alert("✅ " + res.mensaje);
-            window.location.href = "/ventas/listado"; // O la ruta que prefieras
-        } else {
-            alert("❌ Error: " + res.mensaje);
-        }
-    })
-    .catch(error => {
-        console.error("Error en la petición:", error);
-        alert("Hubo un error crítico al procesar la venta.");
-    });
-});
-
-
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Mostrar fecha de hoy con formato regional
+    // 1. Vincular los eventos de los botones (Se eliminaron los onclick directos del HTML)
+    inicializarEventos();
+
+    // 2. Mostrar fecha de hoy con formato regional
     const hoy = new Date();
     const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const fechaActualElement = document.getElementById('fecha-actual');
-    
     if (fechaActualElement) {
         fechaActualElement.innerText = hoy.toLocaleDateString('es-ES', opciones);
     }
 
-    // 2. Escuchar cambios en el monto recibido para recalcular deuda
+    // 3. Escuchar cambios financieros en tiempo real
     const inputMonto = document.getElementById('monto_recibido');
     if (inputMonto) {
         inputMonto.addEventListener('input', calcularBalances);
     }
+
+    const comboMetodo = document.getElementById('cod_metodo');
+    if (comboMetodo) {
+        comboMetodo.addEventListener('change', function() {
+            evaluarMetodoPago();
+            filtrarMonedasPorMetodo();
+        });
+    }
+
+    const comboMoneda = document.getElementById('cod_moneda');
+    if (comboMoneda) {
+        comboMoneda.addEventListener('change', function() {
+            actualizarSimboloMoneda();
+            calcularBalances();
+        });
+    }
+
+    const tipoOperacion = document.getElementById('tipo_operacion');
+    if (tipoOperacion) {
+        tipoOperacion.addEventListener('change', alternarModalidadPago);
+    }
+
+    const selectVehiculo = document.getElementById('select_vehiculo_lista');
+    if (selectVehiculo) {
+        selectVehiculo.addEventListener('change', function() {
+            seleccionarDeLista(this);
+        });
+    }
+
+    // 4. CONSULTA AUTOMÁTICA DE LA TASA BCV AL CARGAR LA PÁGINA
+    fetch('/tasa/api/obtener_tasa')
+        .then(response => {
+            if (!response.ok) throw new Error("Error en red al buscar tasa");
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success' || data.status === 'warning') {
+                const tasa = parseFloat(data.tasa);
+                const inputTasaBcv = document.getElementById('tasa_bcv');
+                
+                if (inputTasaBcv) {
+                    inputTasaBcv.value = tasa;
+                    console.log("✅ Tasa BCV cargada automáticamente: " + tasa + " Bs.");
+                    calcularBalances(); 
+                }
+            }
+        })
+        .catch(error => {
+            console.error("❌ No se pudo cargar la tasa BCV automática:", error);
+        });
 });
 
-
 /**
- * Carga y formatea los datos del vehículo seleccionado
+ * Vinculación limpia de Listeners del Dom
  */
+function inicializarEventos() {
+    document.getElementById('btn_buscar_cliente').addEventListener('click', buscarCliente);
+    document.getElementById('btn_buscar_placa').addEventListener('click', buscarVehiculoPorPlaca);
+    
+    document.getElementById('btn_ir_paso_2').addEventListener('click', () => cambiarPaso(2));
+    document.getElementById('btn_volver_paso_1').addEventListener('click', () => cambiarPaso(1));
+    document.getElementById('btn_ir_paso_3').addEventListener('click', () => cambiarPaso(3));
+    document.getElementById('btn_volver_paso_2').addEventListener('click', () => cambiarPaso(2));
+}
+
+// =========================================================
+// FILTRADO DINÁMICO DE MONEDAS (PETICIÓN PUNTUAL REQUERIDA)
+// =========================================================
+function filtrarMonedasPorMetodo() {
+    const comboMetodo = document.getElementById('cod_metodo');
+    const comboMoneda = document.getElementById('cod_moneda');
+    const comboDigital = document.getElementById('cod_mon_digital'); // <-- NUEVOS SELECTS
+    const comboBanco = document.getElementById('cod_banco');           // <-- NUEVOS SELECTS
+    
+    if (!comboMetodo || !comboMoneda) return;
+
+    // Función auxiliar para pasar a minúsculas y eliminar tildes
+    const limpiarTexto = (txt) => {
+        return (txt || '')
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+    };
+
+    const textoMetodo = limpiarTexto(comboMetodo.options[comboMetodo.selectedIndex].text);
+    let primeraOpcionValida = null;
+    let opcionDolar = null; 
+
+    // Contenedores de la interfaz
+    const wrapperDigital = document.getElementById('wrapper_moneda_digital');
+    const wrapperBanco = document.getElementById('wrapper_banco');     
+    const wrapperMoneda = document.getElementById('wrapper_moneda');   
+
+    // ==========================================
+    // 1. CONTROL DE VISIBILIDAD Y DISBLED DE BLOQUES
+    // ==========================================
+    if (textoMetodo.includes('binance')) {
+        // Binance: Muestra cripto, oculta Banco y Moneda tradicional
+        if (wrapperDigital) wrapperDigital.style.display = 'block';
+        if (wrapperBanco) wrapperBanco.style.display = 'none';
+        if (wrapperMoneda) wrapperMoneda.style.display = 'none';
+
+        // Habilitamos el envío de moneda digital, deshabilitamos banco
+        if (comboDigital) comboDigital.disabled = false;
+        if (comboBanco) comboBanco.disabled = true;
+        comboMoneda.disabled = false; // Lo dejamos activo para que viaje en segundo plano
+    } 
+    else if (textoMetodo.includes('zinli') || textoMetodo.includes('zelle')) {
+        // Zinli o Zelle: Oculta cripto, oculta Banco y muestra Moneda tradicional
+        if (wrapperDigital) wrapperDigital.style.display = 'none';
+        if (wrapperBanco) wrapperBanco.style.display = 'none'; 
+        if (wrapperMoneda) wrapperMoneda.style.display = 'block';
+
+        if (comboDigital) comboDigital.disabled = true;
+        if (comboBanco) comboBanco.disabled = true;
+        comboMoneda.disabled = false;
+    } 
+    else {
+        // Efectivo, Transferencia, Pago Móvil, etc.
+        if (wrapperDigital) wrapperDigital.style.display = 'none';
+        if (wrapperBanco) wrapperBanco.style.display = 'block';
+        if (wrapperMoneda) wrapperMoneda.style.display = 'block';
+
+        if (comboDigital) comboDigital.disabled = true;
+        if (comboBanco) comboBanco.disabled = false;
+        comboMoneda.disabled = false;
+    }
+
+    // ==========================================
+    // 2. FILTRADO INTERNO DE OPCIONES
+    // ==========================================
+    for (let i = 0; i < comboMoneda.options.length; i++) {
+        const opcion = comboMoneda.options[i];
+        const textoMoneda = limpiarTexto(opcion.text);
+        const simbolo = limpiarTexto(opcion.getAttribute('data-simbolo') || '');
+        
+        let visible = false;
+
+        const esDolar = textoMoneda.includes('dolar') || textoMoneda.includes('usd') || simbolo.includes('$');
+        const esBolivar = textoMoneda.includes('bolivar') || textoMoneda.includes('bs');
+
+        // Guardamos la opción de dólares apenas aparezca
+        if (esDolar && !opcionDolar) {
+            opcionDolar = opcion;
+        }
+
+        if (textoMetodo.includes('zinli') || textoMetodo.includes('zelle')) {
+            if (esDolar) visible = true;
+        } else if (textoMetodo.includes('efectivo') || textoMetodo.includes('transferencia') || textoMetodo.includes('pago movil')) {
+            if (esDolar || esBolivar) visible = true;
+        } else if (textoMetodo.includes('binance')) {
+            // ¡SOLUCIÓN AQUÍ! Si es Binance, permitimos que el dólar quede "visible" (activo) 
+            // internamente para que el navegador no lo bloquee al enviar el formulario
+            if (esDolar) visible = true; 
+        } else {
+            visible = true; 
+        }
+
+        if (visible) {
+            // Si estamos en Binance, no queremos alterar el display individual de las opciones
+            if (!textoMetodo.includes('binance')) {
+                opcion.style.display = 'block';
+            }
+            opcion.disabled = false;
+            if (!primeraOpcionValida) primeraOpcionValida = opcion;
+        } else {
+            opcion.style.display = 'none';
+            opcion.disabled = true;
+        }
+    }
+
+    // ==========================================
+    // 3. ASIGNACIÓN DE VALOR Y PRECIOS
+    // ==========================================
+    if (textoMetodo.includes('binance')) {
+        if (opcionDolar) {
+            comboMoneda.value = opcionDolar.value;
+        }
+    } else if (primeraOpcionValida) {
+        comboMoneda.value = primeraOpcionValida.value;
+    }
+
+    if (typeof actualizarSimboloMoneda === 'function') actualizarSimboloMoneda();
+    if (typeof calcularBalances === 'function') calcularBalances();
+}
+/**
+ * Sincroniza el buscador manual y dispara la búsqueda principal.
+ */
+function seleccionarDeLista(selectElement) {
+    const placaSeleccionada = selectElement.value;
+    if (placaSeleccionada) {
+        document.getElementById('buscar_placa').value = placaSeleccionada;
+        buscarVehiculoPorPlaca();
+    }
+}
+
+// =========================================================
+// FUNCIONES DE BÚSQUEDA
+// =========================================================
+
+function buscarCliente() {
+    const inputCedula = document.getElementById('buscar_cliente');
+    const cedula = inputCedula.value;
+    
+    const lblNombre = document.getElementById('lbl_cliente_nombre');
+    const lblTelefono = document.getElementById('lbl_cliente_telefono');
+    const lblCorreo = document.getElementById('lbl_cliente_correo');
+    const lblDireccion = document.getElementById('lbl_cliente_direccion');
+    const hiddenId = document.getElementById('id_cliente_hidden');
+
+    if (!cedula) return;
+
+    lblNombre.innerHTML = `<span class="text-muted italic small">Buscando...</span>`;
+
+    fetch(`/ventas/api/cliente/${cedula}`)
+        .then(response => {
+            if (!response.ok) throw new Error('No encontrado');
+            return response.json();
+        })
+        .then(data => {
+            if (data.exito) {
+                lblNombre.textContent = data.nombre_completo;
+                lblTelefono.textContent = data.telefono ? data.telefono : "No registrado";
+                lblCorreo.textContent = data.correo ? data.correo : "No registrado";
+                lblDireccion.textContent = data.direccion ? data.direccion : "No registrada";
+                
+                hiddenId.value = data.cedula;
+                inputCedula.classList.remove('is-invalid');
+                inputCedula.classList.add('is-valid');
+            }
+        })
+        .catch(error => {
+            lblNombre.textContent = "-";
+            lblTelefono.textContent = "-";
+            lblCorreo.textContent = "-";
+            lblDireccion.textContent = "-";
+            hiddenId.value = "";
+            
+            inputCedula.classList.remove('is-valid');
+            inputCedula.classList.add('is-invalid');
+        });
+}
+
 function buscarVehiculoPorPlaca() {
     const inputPlaca = document.getElementById('buscar_placa');
-    // FORZAMOS MAYÚSCULAS en JS para asegurar consistencia en el envío
     const placa = inputPlaca.value.trim().toUpperCase(); 
     
     const lblMarcaModelo = document.getElementById('v_marca_modelo');
@@ -88,9 +274,6 @@ function buscarVehiculoPorPlaca() {
     const lblPrecio = document.getElementById('v_precio');
     const inputPrecioRaw = document.getElementById('v_precio_raw');
     const hiddenIdVehiculo = document.getElementById('id_vehiculo_hidden');
-    
-    const imgFoto = document.getElementById('v_foto');
-    const divNoFoto = document.getElementById('v_no_foto');
 
     if (!placa) return;
 
@@ -105,249 +288,228 @@ function buscarVehiculoPorPlaca() {
             if (data.exito) {
                 const v = data.vehiculo;
                 
-                // Inyectamos datos
                 lblMarcaModelo.textContent = `${v.marca} ${v.modelo}`;
                 lblTipo.textContent = v.tipo ? v.tipo : "No especificado";
                 lblAnioColor.textContent = `${v.anio} / ${v.color}`;
                 lblEstado.textContent = v.estado;
                 
                 inputPrecioRaw.value = v.precio;
-                const precioFormateado = "$ " + v.precio.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
+                lblPrecio.textContent = "$ " + v.precio.toLocaleString('en-US', {
+                    minimumFractionDigits: 2, maximumFractionDigits: 2
                 });
-                lblPrecio.textContent = precioFormateado;
                 
-                if (document.getElementById('resumen_total')) {
-                    document.getElementById('resumen_total').textContent = precioFormateado;
-                }
-
-                // Forzamos visualización de "Sin Imagen" por requerimiento de la BD actual
-                //imgFoto.classList.add('d-none');
-                //divNoFoto.classList.remove('d-none');
-
-                // Guardamos la placa como primary key en el campo oculto
                 hiddenIdVehiculo.value = v.placa;
-
-                // Clases de éxito de Bootstrap
-                inputPlaca.classList.remove('is-invalid');
-                inputPlaca.classList.add('is-valid');
-
-                if (typeof alternarModalidadPago === 'function') {
-                    alternarModalidadPago();
-                } else if (typeof calcularBalances === 'function') {
-                    calcularBalances();
-                }
+                
+                alternarModalidadPago();
             }
         })
         .catch(error => {
-            lblMarcaModelo.textContent = "-";
-            lblTipo.textContent = "-";
-            lblAnioColor.textContent = "-";
-            lblEstado.textContent = "-";
-            lblPrecio.textContent = "$ 0.00";
-            inputPrecioRaw.value = 0;
-            hiddenIdVehiculo.value = "";
-            
-            if (document.getElementById('resumen_total')) {
-                document.getElementById('resumen_total').textContent = "$ 0.00";
-            }
-
-            //imgFoto.classList.add('d-none');
-           //divNoFoto.classList.remove('d-none');
-
-            // Clases de error de Bootstrap
+            console.error(error);
+            resetFichaVehiculo();
             inputPlaca.classList.remove('is-valid');
             inputPlaca.classList.add('is-invalid');
-            console.error("Error:", error);
         });
 }
 
-/**
- * Alterna visualmente el contenedor de crédito/reserva y fuerza los cálculos financieros.
- */
+function resetFichaVehiculo() {
+    document.getElementById('v_marca_modelo').innerText = "Seleccione un Vehículo";
+    document.getElementById('id_vehiculo_hidden').value = "";
+    document.getElementById('v_precio_raw').value = 0;
+    document.getElementById('v_precio').innerText = "$ 0.00";
+    document.getElementById('total_visual_usd').innerText = "$ 0.00";
+    document.getElementById('total_visual_ves').innerText = "Bs. 0.00";
+    document.getElementById('resumen_total').innerText = "$ 0.00";
+}
+
+function cambiarPaso(nuevoPaso) {
+    if (nuevoPaso === 2 && !document.getElementById('id_cliente_hidden').value) {
+        Swal.fire('Atención', 'Debe identificar un cliente primero', 'warning');
+        return;
+    }
+    if (nuevoPaso === 3 && !document.getElementById('id_vehiculo_hidden').value) {
+        Swal.fire('Atención', 'Debe seleccionar un vehículo válido', 'warning');
+        return;
+    }
+
+    document.querySelectorAll('.step-pane').forEach(pane => pane.classList.add('d-none'));
+    document.getElementById(`step-${nuevoPaso}`).classList.remove('d-none');
+    window.scrollTo(0,0);
+}
+
+// =========================================================
+// LÓGICA DE NEGOCIO Y CÁLCULOS FINANCIEROS (DUAL USD/VES)
+// =========================================================
+
+function calcularBalances() {
+    const precioUSD = parseFloat(document.getElementById('v_precio_raw').value) || 0;
+    const inputTasa = document.getElementById('tasa_bcv');
+    const tasaBCV = inputTasa && parseFloat(inputTasa.value) > 0 ? parseFloat(inputTasa.value) : 1;
+    
+    // Calcular ambos montos exigibles de manera fija
+    const precioVES = precioUSD * tasaBCV;
+
+    // Actualizar campos fijos del desglose dual
+    document.getElementById('total_visual_usd').innerText = `$ ${precioUSD.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('total_visual_ves').innerText = `Bs. ${precioVES.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+    const comboMoneda = document.getElementById('cod_moneda');
+    if (!comboMoneda || !comboMoneda.options[comboMoneda.selectedIndex]) return;
+    
+    const textoMoneda = comboMoneda.options[comboMoneda.selectedIndex].text.toLowerCase();
+    const simbolo = comboMoneda.options[comboMoneda.selectedIndex].getAttribute('data-simbolo') || '$';
+
+    let precioConvertido = precioUSD;
+    const esBolivar = textoMoneda.includes("bol") || textoMoneda.includes("bs") || simbolo.toLowerCase().includes("bs");
+
+    if (esBolivar) {
+        precioConvertido = precioVES;
+    }
+
+    // Mostrar el precio principal en el formato de moneda seleccionada
+    const resumenTotal = document.getElementById('resumen_total');
+    if (resumenTotal) {
+        resumenTotal.textContent = `${simbolo} ${precioConvertido.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    const inputMontoRecibido = document.getElementById('monto_recibido');
+    const inputSaldoPendiente = document.getElementById('saldo_pendiente');
+    const tipoOperacion = document.getElementById('tipo_operacion').value;
+
+    if (tipoOperacion === 'contado') {
+        if (inputMontoRecibido) inputMontoRecibido.value = precioConvertido.toFixed(2);
+        if (inputSaldoPendiente) inputSaldoPendiente.value = "0.00";
+        document.getElementById('deuda_usd').innerText = "USD: $0.00";
+        document.getElementById('deuda_ves').innerText = "VES: Bs. 0.00";
+    } else {
+        // Cálculo de balance de crédito en ambas denominaciones
+        let montoRecibido = parseFloat(inputMontoRecibido.value) || 0;
+        let deudaEnMonedaActual = precioConvertido - montoRecibido;
+        if (deudaEnMonedaActual < 0) deudaEnMonedaActual = 0;
+
+        let saldoPendienteUSD = 0;
+        let saldoPendienteVES = 0;
+
+        if (esBolivar) {
+            saldoPendienteVES = deudaEnMonedaActual;
+            saldoPendienteUSD = deudaEnMonedaActual / tasaBCV;
+        } else {
+            saldoPendienteUSD = deudaEnMonedaActual;
+            saldoPendienteVES = deudaEnMonedaActual * tasaBCV;
+        }
+
+        if (inputSaldoPendiente) inputSaldoPendiente.value = deudaEnMonedaActual.toFixed(2);
+        
+        document.getElementById('deuda_usd').innerText = `USD: $ ${saldoPendienteUSD.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        document.getElementById('deuda_ves').innerText = `VES: Bs. ${saldoPendienteVES.toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    }
+}
+
+function actualizarSimboloMoneda() {
+    const comboMoneda = document.getElementById('cod_moneda');
+    if (!comboMoneda) return;
+    const simbolo = comboMoneda.options[comboMoneda.selectedIndex].getAttribute('data-simbolo') || '$';
+    
+    document.getElementById('simbolo_moneda').innerText = simbolo;
+}
+
 function alternarModalidadPago() {
     const tipoOperacion = document.getElementById('tipo_operacion').value;
     const wrapperCredito = document.getElementById('wrapper_credito');
-    const inputMonto = document.getElementById('monto_recibido');
-    const precioBase = parseFloat(document.getElementById('v_precio_raw').value) || 0;
-
+    
     if (!wrapperCredito) return;
 
     if (tipoOperacion === 'credito') {
-        // Mostramos los campos de deuda y fecha de vencimiento
         wrapperCredito.classList.remove('d-none');
         document.getElementById('fecha_vencimiento').required = true;
+        document.getElementById('monto_recibido').value = ""; // Limpiar para que digiten el abono
     } else {
-        // Si es de contado, ocultamos y auto-llenamos el monto completo del auto
         wrapperCredito.classList.add('d-none');
         document.getElementById('fecha_vencimiento').required = false;
-        
-        if (precioBase > 0) {
-            inputMonto.value = precioBase;
-        }
     }
     
     calcularBalances();
 }
 
 /**
- * Bloquea de forma inteligente el selector de bancos nacionales si el método es Efectivo,
- * Zelle, Zinli o Binance.
+ * EVALUAR MÉTODO: Corrección de ID ('wrapper_referencia') para ocultar correctamente en Efectivo
  */
 function evaluarMetodoPago() {
-    const metodo = document.getElementById('cod_metodo').value;
-    const wrBanco = document.getElementById('wrapper_banco');
-    const wrRef = document.getElementById('wrapper_refencia');
-    const inputRef = document.getElementById('refencia'); // ID corregido
-    const lblRef = document.getElementById('label_refencia');
+    const comboMetodo = document.getElementById('cod_metodo');
+    if (!comboMetodo) return;
 
-    // 1 = Efectivo (Ajusta este ID según tu base de datos)
-    if (metodo === "1") { 
-        wrBanco.classList.add('d-none');
-        wrRef.classList.add('d-none');
+    const textoMetodo = comboMetodo.options[comboMetodo.selectedIndex].text.toLowerCase();
+    
+    const wrBanco = document.getElementById('wrapper_banco');
+    const wrRef = document.getElementById('wrapper_referencia'); // ID corregido con la "er" faltante
+    const inputRef = document.getElementById('refencia'); 
+    const lblRef = document.getElementById('label_referencia');
+
+    // Validación estricta por texto para evitar fallas por IDs correlativos de BD
+    if (textoMetodo.includes("efectivo")) { 
+        if(wrBanco) wrBanco.classList.add('d-none');
+        if(wrRef) wrRef.classList.add('d-none');
         if (inputRef) {
             inputRef.removeAttribute('required');
             inputRef.value = "";
         }
     } else {
-        wrBanco.classList.remove('d-none');
-        wrRef.classList.remove('d-none');
+        if(wrBanco) wrBanco.classList.remove('d-none');
+        if(wrRef) wrRef.classList.remove('d-none');
         if (inputRef) inputRef.setAttribute('required', 'required');
 
-        // Cambiar etiquetas según el método
-        if (["5", "6", "7"].includes(metodo)) { // Digitales
-            if (lblRef) lblRef.innerText = "TXID / Hash de Transferencia";
+        if (textoMetodo.includes("pago movil") || textoMetodo.includes("transferencia")) { 
+            if (lblRef) lblRef.innerText = "Nro. de Referencia o Transacción Bancaria";
         } else {
-            if (lblRef) lblRef.innerText = "Nro. de Referencia Bancaria";
+            if (lblRef) lblRef.innerText = "Código de Referencia / ID de Pago";
         }
     }
 }
 
-/**
- * Ejecuta la matemática financiera en tiempo real adaptándose automáticamente 
- * si la transacción se liquida en Dólares o Bolívares usando la Tasa BCV.
- */
-function calcularBalances() {
-    // 1. Obtener valores base
-    const precioUSD = parseFloat(document.getElementById('v_precio_raw').value) || 0;
-    const tasaBCV = parseFloat(document.getElementById('tasa_bcv').value) || 1;
-    
-    // 2. Detectar Moneda Seleccionada
-    const comboMoneda = document.getElementById('cod_moneda');
-    if (!comboMoneda.options[comboMoneda.selectedIndex]) return;
-    
-    const textoMoneda = comboMoneda.options[comboMoneda.selectedIndex].text.toLowerCase();
-    const simbolo = comboMoneda.options[comboMoneda.selectedIndex].getAttribute('data-simbolo') || '$';
+// =========================================================
+// INTERCEPCIÓN DEL FORMULARIO PRINCIPAL
+// =========================================================
+document.getElementById('form-venta').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-    // 3. Lógica de Conversión (Multiplicar si es Bolívares)
-    let precioConvertido = precioUSD;
-    const infoTasa = document.getElementById('info_tasa_bcv');
+    const cedula = document.getElementById('id_cliente_hidden').value;
+    const placa = document.getElementById('id_vehiculo_hidden').value;
+    
+    if (!cedula || !placa) {
+        Swal.fire('Error', 'Debe seleccionar un cliente y un vehículo válidos.', 'error');
+        return;
+    }
 
-    if (textoMoneda.includes("bolivar") || textoMoneda.includes("bs")) {
-        precioConvertido = precioUSD * tasaBCV;
-        if (infoTasa) {
-            infoTasa.textContent = `Tasa: 1$ = ${tasaBCV.toFixed(2)} Bs.`;
-            infoTasa.classList.remove('d-none');
+    const formData = new FormData(this);
+    
+    // Habilitar campos temporalmente para asegurar transmisión
+    const selectBanco = document.getElementById('cod_banco');
+    const bancoHabilitadoOriginalmente = !selectBanco.disabled;
+    selectBanco.disabled = false; 
+
+    const data = {};
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+
+    if(!bancoHabilitadoOriginalmente) selectBanco.disabled = true;
+
+    fetch(this.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(res => {
+        if (res.exito) {
+            Swal.fire('Éxito', res.mensaje, 'success').then(() => {
+                window.location.href = "/ventas/lista_ventas";
+            });
+        } else {
+            Swal.fire('Error', res.mensaje, 'error');
         }
-    } else {
-        if (infoTasa) infoTasa.classList.add('d-none');
-    }
-
-    // 4. Actualizar etiquetas visuales de Total
-    const resumenTotal = document.getElementById('resumen_total');
-    if (resumenTotal) {
-        resumenTotal.textContent = `${simbolo} ${precioConvertido.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-    }
-
-    // 5. Manejo de Monto Recibido y Saldo Pendiente
-    const inputMontoRecibido = document.getElementById('monto_recibido');
-    const inputSaldoPendiente = document.getElementById('saldo_pendiente');
-    const tipoOperacion = document.getElementById('tipo_operacion').value;
-
-    // Si es CONTADO, autollenamos el monto recibido con el total convertido
-    if (tipoOperacion === 'contado') {
-        inputMontoRecibido.value = precioConvertido.toFixed(2);
-        if (inputSaldoPendiente) inputSaldoPendiente.value = "0.00";
-    } else {
-        // Si es CRÉDITO, calculamos la resta
-        let montoRecibido = parseFloat(inputMontoRecibido.value) || 0;
-        let deuda = precioConvertido - montoRecibido;
-        if (inputSaldoPendiente) {
-            inputSaldoPendiente.value = deuda > 0 ? deuda.toFixed(2) : "0.00";
-        }
-    }
-}
-
-/**
- * Función para buscar cliente (Estructura para FETCH)
- */
-function buscarCliente() {
-    const inputCedula = document.getElementById('buscar_cliente');
-    const cedula = inputCedula.value;
-    
-    // Elementos visuales del contenedor unificado
-    const lblNombre = document.getElementById('lbl_cliente_nombre');
-    const lblTelefono = document.getElementById('lbl_cliente_telefono');
-    const lblCorreo = document.getElementById('lbl_cliente_correo');
-    const lblDireccion = document.getElementById('lbl_cliente_direccion');
-    
-    const hiddenId = document.getElementById('id_cliente_hidden');
-
-    if (!cedula) return;
-
-    // Efecto visual de carga en el contenedor
-    lblNombre.innerHTML = `<span class="text-muted italic small">Buscando...</span>`;
-
-    fetch(`/ventas/api/cliente/${cedula}`)
-        .then(response => {
-            if (!response.ok) throw new Error('No encontrado');
-            return response.json();
-        })
-        .then(data => {
-            if (data.exito) {
-                // Inyectamos los datos reales del cliente en la ficha integrada
-                lblNombre.textContent = data.nombre_completo;
-                lblTelefono.textContent = data.telefono ? data.telefono : "No registrado";
-                lblCorreo.textContent = data.correo ? data.correo : "No registrado";
-                lblDireccion.textContent = data.direccion ? data.direccion : "No registrada";
-                
-                // Guardamos la cédula en el input oculto que va al formulario final
-                hiddenId.value = data.cedula;
-                
-                // Feedback visual de éxito
-                inputCedula.classList.remove('is-invalid');
-                inputCedula.classList.add('is-valid');
-            }
-        })
-        .catch(error => {
-            // Limpiamos los campos en caso de error
-            lblNombre.textContent = "-";
-            lblTelefono.textContent = "-";
-            lblCorreo.textContent = "-";
-            lblDireccion.textContent = "-";
-            hiddenId.value = "";
-            
-            // Feedback visual de error
-            inputCedula.classList.remove('is-valid');
-            inputCedula.classList.add('is-invalid');
-            console.error("Error:", error);
-        });
-}
-
-/**
- * Función para registro rápido de cliente (Estructura para AJAX)
- */
-function guardarClienteRapido() {
-    const cedula = document.getElementById('m_cedula').value;
-    const nombre = document.getElementById('m_nombre').value;
-    const apellido = document.getElementById('m_apellido').value;
-
-    if (!cedula || !nombre || !apellido) return;
-
-    // Aquí enviarás los datos a tu controlador de usuarios/clientes
-    // Una vez guardado con éxito, cierras el modal:
-    const modalElement = document.getElementById('modalCliente');
-    const modal = bootstrap.Modal.getInstance(modalElement);
-    if (modal) modal.hide();
-}
+    })
+    .catch(error => {
+        console.error("Error en la petición:", error);
+        Swal.fire('Error Crítico', 'Hubo un problema procesando la venta.', 'error');
+    });
+});

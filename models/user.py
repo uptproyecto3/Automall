@@ -1,11 +1,9 @@
 from models.db import obtener_conexion_seguridad 
-from werkzeug.security import generate_password_hash  # <-- IMPORTANTE: Añade esta importación arriba de tu modelo
 from utils.validaciones import ValidacionUsuario
 
 class Usuario:
     def __init__(self, cedula, nombre, apellido, telefono, direccion, correo, password, foto):
         self.cedula = cedula
-        self.password = generate_password_hash(password)  # <-- HASH LA CONTRASEÑA ANTES DE GUARDARLA
         self.nombre = nombre
         self.apellido = apellido
         self.telefono = telefono
@@ -36,14 +34,13 @@ class Usuario:
 
     def guardar(self):
         # 1. Validaciones de Formato (usando utils)
-        # Evaluamos la contraseña en texto plano para asegurar que cumple con los requisitos de fuerza
         err = ValidacionUsuario.validar_cedula_formato(self.cedula) or \
-            ValidacionUsuario.validar_nombre_apellido(self.nombre, "Nombre") or \
-            ValidacionUsuario.validar_nombre_apellido(self.apellido, "Apellido") or \
-            ValidacionUsuario.validar_telefono(self.telefono) or \
-            ValidacionUsuario.validar_formato_correo(self.correo) or \
-            ValidacionUsuario.validar_direccion(self.direccion) or \
-            ValidacionUsuario.validar_password_segura(self.password)
+              ValidacionUsuario.validar_nombre_apellido(self.nombre, "Nombre") or \
+              ValidacionUsuario.validar_nombre_apellido(self.apellido, "Apellido") or \
+              ValidacionUsuario.validar_telefono(self.telefono) or \
+              ValidacionUsuario.validar_formato_correo(self.correo) or \
+              ValidacionUsuario.validar_direccion(self.direccion) or \
+              ValidacionUsuario.validar_password_segura(self.password)
         
         if err: return {"status": False, "mensaje": err}
 
@@ -55,12 +52,6 @@ class Usuario:
             if existe['correo'] == self.correo:
                 return {"status": False, "mensaje": "El correo ya está en uso por otro usuario."}
 
-        # --- CAMBIO DE SEGURIDAD: Hashear la contraseña ---
-        # Generamos un hash seguro a partir de la contraseña original.
-        # El método generate_password_hash ya maneja la sal de forma automática y segura.
-        password_hasheada = generate_password_hash(self.password)
-        # --------------------------------------------------
-
         # 3. Proceder al guardado
         try:
             conexion = obtener_conexion_seguridad()
@@ -70,10 +61,8 @@ class Usuario:
                 (cedula_usuario, nombre, apellido, telefono, direccion, correo, password, foto, estado) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 1)
             """
-            # Sustituimos self.password por la variable local que contiene el hash seguro
             val = (self.cedula, self.nombre, self.apellido, 
-                self.telefono, self.direccion, self.correo, password_hasheada, self.foto)
-            
+                   self.telefono, self.direccion, self.correo, self.password, self.foto)
             cursor.execute(sql, val)
             conexion.commit()
             cursor.close()
@@ -159,7 +148,6 @@ class Usuario:
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True) 
         
-        # Añadimos telefono, direccion y correo a la consulta
         sql = """
             SELECT cedula_usuario, nombre, apellido, telefono, direccion, correo 
             FROM t_usuario 
@@ -172,4 +160,46 @@ class Usuario:
         
         cursor.close()
         conexion.close()
-        return cliente
+        
+        # --- LA RESPONSABILIDAD SE MUDÓ AQUÍ ---
+        if cliente:
+            return {
+                'exito': True,
+                'nombre_completo': f"{cliente['nombre']} {cliente['apellido']}",
+                'cedula': cliente['cedula_usuario'],
+                'telefono': cliente['telefono'],
+                'direccion': cliente['direccion'],
+                'correo': cliente['correo']
+            }
+        
+        return None
+    
+    @staticmethod
+    def obtener_por_rol(cod_rol):
+        conexion = obtener_conexion_seguridad()
+        cursor = conexion.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT u.*, r.nombre_rol 
+            FROM t_usuario u
+            JOIN t_rol r ON u.cod_rol = r.cod_rol
+            WHERE u.cod_rol = %s
+            ORDER BY u.nombre, u.apellido
+        """, (cod_rol,))
+        usuarios = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+        return usuarios
+
+    @staticmethod
+    def cambiar_estado(cedula, estado):
+        conexion = obtener_conexion_seguridad()
+        cursor = conexion.cursor(dictionary=True)
+        cursor.execute("""
+            UPDATE t_usuario SET estado = %s WHERE cedula_usuario = %s
+        """, (estado, cedula))
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+        return True
+
+            

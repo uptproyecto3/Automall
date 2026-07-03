@@ -1,9 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
-    // =========================================================
-    // 1. Inicializar DataTables
-    // =========================================================
+  
     const tablaClientes = $('#tablaClientes');
     if (tablaClientes.length > 0) {
         tablaClientes.DataTable({
@@ -23,9 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // =========================================================
-    // 2. Precargar modal de edici\u00f3n con datos del cliente
-    // =========================================================
+  
     $(document).on('click', '.btn-editar-cliente', function () {
         var btn       = $(this);
         var cedula    = btn.attr('data-cedula');
@@ -43,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#editar_direccion').val(direccion);
         $('#editar_correo').val(correo);
 
-        // Mostrar foto actual en el preview
+        // Mostrar foto actual 
         var previewImg = document.getElementById('preview-editar');
         if (fotoUrl && fotoUrl.trim() !== '') {
             previewImg.src = fotoUrl;
@@ -52,13 +48,10 @@ document.addEventListener('DOMContentLoaded', function () {
             previewImg.src = '#';
         }
 
-        // Apuntar el form a la ruta de edici\u00f3n correcta
         $('#formEditarCliente').attr('action', '/clientes/editar/' + cedula);
     });
 
-    // =========================================================
-    // 3. Vista previa de nueva foto seleccionada en modal de edici\u00f3n
-    // =========================================================
+  
     var inputFotoEditar = document.getElementById('foto_perfil_editar');
     if (inputFotoEditar) {
         inputFotoEditar.addEventListener('change', function () {
@@ -74,9 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // =========================================================
-    // 4. Modal de confirmaci\u00f3n de eliminaci\u00f3n
-    // =========================================================
+
     $(document).on('click', '.btn-eliminar-cliente', function () {
         var cedula = $(this).attr('data-cedula');
         var nombre = $(this).attr('data-nombre');
@@ -94,9 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // =========================================================
-    // 5. Auto-cierre de notificaciones flash tras 5 segundos
-    // =========================================================
+
     setTimeout(function () {
         document.querySelectorAll('.alert').forEach(function (alerta) {
             if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {

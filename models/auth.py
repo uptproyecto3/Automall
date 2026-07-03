@@ -1,6 +1,6 @@
 from models.db import obtener_conexion_seguridad
-from utils.validaciones import ValidacionUsuario  # Importamos la clase de validaciones
-from werkzeug.security import check_password_hash  # <-- IMPORTACIÓN CLAVE
+from utils.validaciones import ValidacionUsuario  
+from werkzeug.security import check_password_hash 
 
 class Auth: 
     def __init__(self, cedula_usuario, nombre, apellido, telefono, direccion, correo, password):
@@ -14,7 +14,6 @@ class Auth:
 
     @staticmethod
     def verificar_credenciales(correo, password):
-        # Validar formato de correo antes de consultar
         error_correo = ValidacionUsuario.validar_formato_correo(correo)
         if error_correo:
             return {"error": error_correo} 
@@ -22,7 +21,6 @@ class Auth:
         conexion = obtener_conexion_seguridad()
         cursor = conexion.cursor(dictionary=True)
         
-        # Consultamos trayendo también la columna password (donde está el hash)
         sql = "SELECT cedula_usuario, nombre, cod_rol, password FROM t_usuario WHERE correo = %s"
         cursor.execute(sql, (correo,))
         usuario = cursor.fetchone()
@@ -30,15 +28,20 @@ class Auth:
         cursor.close()
         conexion.close()
         
-        # Si el usuario existe, usamos check_password_hash para validar la clave
         if usuario:
-            # Comparamos la contraseña recibida con el hash de la BD
-            if check_password_hash(usuario['password'], password):
-                # Limpiamos el hash del diccionario por seguridad antes de enviarlo al controlador
-                usuario.pop('password', None)
-                return usuario
+            db_password = usuario['password']
             
-        # Si no existe el usuario o la contraseña no coincide, retornamos None
+            # 1. Si la clave es un Hash moderno d e Flask (empieza por pbkdf2 o scrypt)
+            if db_password.startswith('pbkdf2:') or db_password.startswith('scrypt:'):
+                if check_password_hash(db_password, password):
+                    usuario.pop('password', None)
+                    return usuario
+            # 2. Respaldo: Si es una clave vieja guardada en texto plano (sin hashear)
+            else:
+                if db_password == password:
+                    usuario.pop('password', None)
+                    return usuario
+            
         return None
     
     @staticmethod

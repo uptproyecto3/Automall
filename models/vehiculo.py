@@ -81,13 +81,13 @@ class Vehiculo:
         cursor = conexion.cursor(dictionary=True) 
         sql = """
             SELECT v.*, ma.nombre_marca, mo.nombre_modelo, i.URL as imagen_url,
-                   d.*, a.*, p.razon_social as nombre_proveedor
+                   d.*, a.*, p.razon_social as nombre_propietario
             FROM vehiculo v
             JOIN modelo mo ON v.cod_modelo = mo.cod_modelo
             JOIN marca ma ON mo.cod_marca = ma.cod_marca
             JOIN documentacion d ON v.cod_documento = d.cod_documento
             JOIN accesorio a ON v.cod_accesorio = a.cod_accesorio
-            JOIN proveedor p ON v.cedula_proveedor = p.cedula_proveedor
+            JOIN propietario p ON v.cedula_propietario = p.cedula_propietario
             LEFT JOIN imagen i ON v.placa = i.placa
             ORDER BY v.placa DESC
         """
@@ -199,7 +199,6 @@ class Vehiculo:
         conexion = obtener_conexion()
         cursor = conexion.cursor(dictionary=True)
         
-        # Limpiamos espacios y forzamos mayúsculas en el backend
         placa_limpia = placa.strip().upper()
         
         sql = """
@@ -223,6 +222,57 @@ class Vehiculo:
         cursor.execute(sql, (placa_limpia,))
         vehiculo = cursor.fetchone()
         
+        cursor.close()
+        conexion.close()
+        
+        # --- LA RESPONSABILIDAD SE MUDÓ AQUÍ ---
+        if vehiculo:
+            return {
+                'exito': True,
+                'vehiculo': {
+                    'placa': vehiculo['placa'],
+                    'marca': vehiculo['marca'],
+                    'modelo': vehiculo['modelo'],
+                    'tipo': vehiculo['tipo'],
+                    'anio': vehiculo['anio'],
+                    'color': vehiculo['color'],
+                    'precio': float(vehiculo['precio']),
+                    'estado': vehiculo['estado']
+                }
+            }
+            
+        return None
+    
+    @staticmethod
+    def obtener_vehiculos_activos():
+        """Obtiene solo los vehículos activos (para selects en compras)"""
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT v.placa, mo.nombre_modelo as modelo, v.color 
+            FROM vehiculo v
+            JOIN modelo mo ON v.cod_modelo = mo.cod_modelo
+            WHERE v.estado = 'Disponible'
+            ORDER BY v.placa
+        """)
+        vehiculos = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+        return vehiculos
+    
+    @staticmethod
+    def obtener_vehiculos_disponibles():
+        """Obtiene solo los vehículos disponibles (para selects en ventas)"""
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT v.placa, mo.nombre_modelo as modelo, v.color 
+            FROM vehiculo v
+            JOIN modelo mo ON v.cod_modelo = mo.cod_modelo
+            WHERE v.estado = 'Disponible'
+            ORDER BY v.placa
+        """)
+        vehiculo = cursor.fetchall()
         cursor.close()
         conexion.close()
         return vehiculo

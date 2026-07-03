@@ -1,8 +1,8 @@
 from functools import wraps
 from flask import session, flash, redirect, url_for
-from models.permiso import Permiso  # Importamos la clase del modelo
+from models.permiso import Permiso 
 
-# Decorador para permisos específicos (Ej: eliminar, crear)
+# Decorador para permisos específicos de funciones (CRUD)
 def requiere_permiso(modulo, tipo_permiso):
     def decorador(f):
         @wraps(f)
@@ -11,13 +11,13 @@ def requiere_permiso(modulo, tipo_permiso):
             if not cod_rol: 
                 return redirect(url_for('auth.login'))
             
-            # Lista blanca preventiva en el middleware por redundancia de seguridad
+            # Lista blanca preventiva en el middleware
             permisos_validos = ['p_crear', 'p_eliminar', 'p_actualizar', 'p_leer']
             if tipo_permiso not in permisos_validos:
                 flash("Error de seguridad: Acción o permiso no reconocido.")
                 return redirect(url_for('index'))
 
-            # Invocamos la verificación abstrayendo por completo el SQL de la vista/utilidad
+            # Invocamos la verificación relacional
             tiene_acceso = Permiso.verificar_acceso(cod_rol, modulo, tipo_permiso)
             
             if tiene_acceso:
@@ -29,7 +29,7 @@ def requiere_permiso(modulo, tipo_permiso):
     return decorador
 
 
-# Decorador específico para Super Usuario (ID 1)
+# Decorador exclusivo para Super Usuario
 def requiere_superusuario(f):
     @wraps(f)
     def wrapper(*args, **kwargs):

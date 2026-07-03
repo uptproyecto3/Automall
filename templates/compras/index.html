@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Compras de Insumos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-cart3"></i> Compras de Insumos</h2>
+        {% if tiene_permiso('Compras', 'p_crear') %}
+        <a href="{{ url_for('compras.nueva_compra') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nueva Compra
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Código</th>
+                            <th>Fecha</th>
+                            <th>Monto Total</th>
+                            <th>Items</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </thead>
+                    <tbody>
+                        {% for c in compras %}
+                        <tr>
+                            <td>{{ c.cod_compras }}</td>
+                            <td>{{ c.fecha }}</td>
+                            <td>Bs. {{ "{:,.2f}".format(c.monto_total) }}</td>
+                            <td>{{ c.total_items or 0 }}</td>
+                            <td>
+                                {% if c.estado == 'Completada' %}
+                                <span class="badge bg-success">Completada</span>
+                                {% else %}
+                                <span class="badge bg-warning">Pendiente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('compras.agregar_detalle', cod_compras=c.cod_compras) }}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if c.estado != 'Completada' %}
+                                <a href="{{ url_for('compras.finalizar_compra', cod_compras=c.cod_compras) }}" class="btn btn-sm btn-success" onclick="return confirm('¿Finalizar esta compra?')">
+                                    <i class="bi bi-check-lg"></i>
+                                </a>
+                                {% endif %}
+                                {% if tiene_permiso('Compras', 'p_eliminar') %}
+                                <a href="{{ url_for('compras.eliminar_compra', cod_compras=c.cod_compras) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar esta compra?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

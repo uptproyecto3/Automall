@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function(){
     'use strict';
 
-    // 1. Inicialización de selector de hora (Flatpickr Reloj)
     const fpHora = flatpickr("#hora_cita", {
         locale: "es",
         enableTime: true,
@@ -13,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function(){
         maxTime: "18:00"                               
     });
 
-    // 2. Inicialización de selector de fecha (Flatpickr Calendario)
+
     const fpFecha = flatpickr("#fecha_cita", {
         locale: "es",
         dateFormat: "Y-m-d",
@@ -23,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function(){
         altFormat: "d F, Y"
     });
 
-    // 3. Previsualización dinámica del Vehículo Seleccionado
     const selectVehiculo = document.getElementById('select-vehiculo');
     const contenedorPreview = document.getElementById('contenedor-previsualizacion');
 
@@ -39,12 +37,10 @@ document.addEventListener('DOMContentLoaded', function(){
                 const placa = opcionSeleccionada.getAttribute('data-placa');
                 let imagen = opcionSeleccionada.getAttribute('data-imagen');
 
-                // Si no tiene imagen asignada, usamos un placeholder premium SVG
                 if (!imagen || imagen.trim() === "") {
                     imagen = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 400 220' style='background:%23e9ecef;'><rect width='400' height='220' fill='%23e9ecef'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%236c757d'>Vehículo sin fotografía</text></svg>`;
                 }
 
-                // Generar card HTML de previsualización coherente al estilo AutoMall
                 contenedorPreview.innerHTML = `
                     <div class="card shadow border-0 rounded-3 overflow-hidden text-start mx-auto animate__animated animate__fadeIn" style="max-width: 350px;">
                         <img src="${imagen}" class="card-img-top" alt="${marca} ${modelo}" style="height: 180px; object-fit: cover;">
@@ -60,7 +56,6 @@ document.addEventListener('DOMContentLoaded', function(){
                     </div>
                 `;
             } else {
-                // Restaurar mensaje de ayuda inicial
                 contenedorPreview.innerHTML = `
                     <div class="text-muted py-5 border border-dashed rounded-3 bg-light">
                         <i class="bi bi-image text-secondary-50" style="font-size: 3rem;"></i>
@@ -71,13 +66,11 @@ document.addEventListener('DOMContentLoaded', function(){
             }
         });
 
-        // Disparar el cambio si ya hay una opción seleccionada (por ejemplo al volver con errores flash)
         if (selectVehiculo.value !== "") {
             selectVehiculo.dispatchEvent(new Event('change'));
         }
     }
 
-    // 4. Evitar doble envío de formulario
     const formulario = document.querySelector('form');
     const botonSubmit = document.getElementById('btn-agendar');
 
@@ -96,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     }
 
-    // 5. Ocultar notificaciones flash automáticamente tras 5 segundos (Usando Bootstrap 5 nativo)
     setTimeout(function() {
         const alertas = document.querySelectorAll('.alert');
         alertas.forEach(function(alerta) {

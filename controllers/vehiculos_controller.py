@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, flash, url_for
 from models.vehiculo import Vehiculo    
 from models.modelo import Modelo      
 from models.marca import Marca      
-from models.proveedor import Proveedor 
+from models.propietario import Propietario 
 from werkzeug.utils import secure_filename
 from utils.permisos import requiere_permiso
 from flask import jsonify
@@ -77,7 +77,7 @@ def registro():
     return render_template('vehiculos/registro.html', 
                            marcas=Marca.obtener_todas(), 
                            modelos=Modelo.obtener_todas(), 
-                           proveedores=Proveedor.obtener_todos())
+                           propietarios=Propietario.obtener_todos())
                            
 @vehiculos_bp.route('/vehiculos-editar/<placa>', methods=['GET', 'POST'])
 @requiere_permiso('Vehiculos', 'p_actualizar')
@@ -138,7 +138,7 @@ def editar(placa):
                            v=vehiculo, 
                            marcas=Marca.obtener_todas(), 
                            modelos=Modelo.obtener_todas(), 
-                           proveedores=Proveedor.obtener_todos())
+                           propietarios=Propietario.obtener_todos())
 
 @vehiculos_bp.route('/vehiculos-eliminar/<placa>', methods=['POST'])
 @requiere_permiso('Vehiculos', 'p_eliminar')

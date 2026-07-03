@@ -143,11 +143,11 @@
                                         </div>
 
                                         <div class="col-md-12">
-                                            <label class="form-label fw-bold">Proveedor (Dueño Anterior)</label>
+                                            <label class="form-label fw-bold">propietario (Dueño Anterior)</label>
                                             <select name="cedula" class="form-select form-control-lg" required>
-                                                <option value="" selected disabled>Seleccione un proveedor...</option>
-                                                {% for prov in proveedores %}
-                                                <option value="{{ prov.cedula_proveedor }}">{{ prov.razon_social }} (CI: {{ prov.cedula_proveedor }})</option>
+                                                <option value="" selected disabled>Seleccione un propietario...</option>
+                                                {% for prov in propietarios %}
+                                                <option value="{{ prov.cedula_propietario }}">{{ prov.razon_social }} (CI: {{ prov.cedula_propietario }})</option>
                                                 {% endfor %}
                                             </select>
                                         </div>

@@ -1,36 +1,37 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models.permiso import Permiso
-from utils.permisos import requiere_superusuario # Importamos el decorador
+from utils.permisos import requiere_superusuario 
+
 permisos_bp = Blueprint('permisos', __name__) 
 
-
 @permisos_bp.route('/gestionar', methods=['GET', 'POST'])
-@requiere_superusuario  # <--- AQUÍ ESTÁ EL BLOQUEO REAL
+@requiere_superusuario  
 def gestionar():
-    # 1. Si enviamos el formulario de actualizar
+    # 1. Si enviamos el formulario para guardar cambios
     if request.method == 'POST':
         id_rol_actual = request.form.get('id_rol_actual')
-        ids = request.form.getlist('cod_permiso')
+        # Captura todos los valores de los checkboxes marcados en el HTML
+        permisos_marcados = request.form.getlist('permisos_activos') 
         
-        for id_p in ids:
-            p_crear = 1 if request.form.get(f'crear_{id_p}') else 0
-            p_leer = 1 if request.form.get(f'leer_{id_p}') else 0
-            p_actualizar = 1 if request.form.get(f'actualizar_{id_p}') else 0
-            p_eliminar = 1 if request.form.get(f'eliminar_{id_p}') else 0
-            Permiso.actualizar(id_p, p_crear, p_leer, p_actualizar, p_eliminar)
+        resultado = Permiso.sincronizar_permisos(id_rol_actual, permisos_marcados)
+        
+        if resultado["status"]:
+            flash("Matriz de permisos actualizada con éxito para este rol.")
+        else:
+            flash(f"Error al procesar la actualización: {resultado['error']}")
             
-        flash("Permisos actualizados para este rol")
         return redirect(url_for('permisos.gestionar', cod_rol=id_rol_actual))
 
-    # 2. Si entramos por GET (Cargar datos)
+    # 2. Si entramos por GET (Cargar vista de administración)
     roles = Permiso.obtener_roles()
     id_rol_seleccionado = request.args.get('cod_rol', type=int)
-    permisos = []
+    matriz_permisos = []
     
     if id_rol_seleccionado:
-        permisos = Permiso.obtener_por_rol(id_rol_seleccionado)
+        # Obtenemos la lista plana relacional
+        matriz_permisos = Permiso.obtener_matriz_permisos(id_rol_seleccionado)
         
     return render_template('permisos/gestionar.html', 
                            roles=roles, 
-                           permisos=permisos, 
+                           permisos=matriz_permisos, 
                            id_rol_seleccionado=id_rol_seleccionado)

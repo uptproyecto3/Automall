@@ -16,10 +16,7 @@ class ClienteModel:
         self.password = password
         self.foto = foto
         self.cod_rol = cod_rol
-
-    # -----------------------------------------------------------------------
-    # REGISTRO
-    # -----------------------------------------------------------------------
+# REGISTRO-----------------------------------------------------------------------
     @staticmethod
     def verificar_existencia(cedula, correo):
         """Comprueba de forma paramétrica si la cédula o correo ya existen."""
@@ -94,9 +91,7 @@ class ClienteModel:
         except Exception as e:
             return {"status": False, "mensaje": f"Error interno en el servidor: {str(e)}"}
 
-    # -----------------------------------------------------------------------
-    # GESTIÓN (Solo Super Usuario)
-    # -----------------------------------------------------------------------
+    # GESTIÓN (Solo Super Usuario) -----------------------------------------------------------------------
     @staticmethod
     def obtener_clientes():
         """Retorna todos los usuarios con rol de cliente (cod_rol = 4)."""
@@ -173,3 +168,6 @@ class ClienteModel:
             return {"status": False, "mensaje": "No se encontró el cliente o no se puede eliminar."}
         except Exception as e:
             return {"status": False, "mensaje": f"Error al eliminar: {str(e)}"}
+
+
+

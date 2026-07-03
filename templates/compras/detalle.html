@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de Compra #{{ compra.cod_compras }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4><i class="bi bi-receipt"></i> Compra #{{ compra.cod_compras }}</h4>
+                    <div>
+                        <span class="badge {% if compra.estado == 'Completada' %}bg-success{% else %}bg-warning{% endif %}">
+                            {{ compra.estado }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Información de la compra -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Fecha:</strong> {{ compra.fecha }}</p>
+                            <p><strong>Monto Total:</strong> Bs. {{ "{:,.2f}".format(compra.monto_total) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Lista de detalles existentes -->
+                    <h5><i class="bi bi-list-ul"></i> Insumos Agregados</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Costo Unitario</th>
+                                    <th>Subtotal</th>
+                                    <th>Vehículo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in compra.detalles %}
+                                <tr>
+                                    <td>{{ d.producto }}<br>
+                                        <small class="text-muted">{{ d.nombre_insumo or 'Sin insumo' }}</small>
+                                    </td>
+                                    <td>{{ d.cantidad }}</td>
+                                    <td>Bs. {{ "{:,.2f}".format(d.costo_unitario) }}</td>
+                                    <td>Bs. {{ "{:,.2f}".format(d.cantidad * d.costo_unitario) }}</td>
+                                    <td>{{ d.placa }} - {{ d.modelo or 'Sin modelo' }} ({{ d.color or 'Sin color' }})</td>
+                                    <td>
+                                        {% if compra.estado != 'Completada' %}
+                                        <a href="{{ url_for('compras.eliminar_detalle', cod_det_compra=d.cod_det_compra, cod_compras=compra.cod_compras) }}" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('¿Eliminar este detalle?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not compra.detalles %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No hay insumos agregados</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                            <tfoot class="table-secondary">
+                                <tr>
+                                    <th colspan="3" class="text-end">Total:</th>
+                                    <th>Bs. {{ "{:,.2f}".format(compra.monto_total) }}</th>
+                                    <th colspan="2"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Formulario para agregar nuevo detalle (solo si no está completada) -->
+                    {% if compra.estado != 'Completada' %}
+                    <div class="card mt-4">
+                        <div class="card-header bg-success text-white">
+                            <h5><i class="bi bi-plus-circle"></i> Agregar Insumo</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label>Insumo (opcional)</label>
+                                        <select name="cod_insumo" class="form-control">
+                                            <option value="">-- Seleccionar de catálogo --</option>
+                                            {% for i in insumos %}
+                                            <option value="{{ i.cod_insumo }}">{{ i.nombre_insumo }} (Stock: {{ i.stock }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label>Producto *</label>
+                                        <input type="text" name="producto" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label>Cantidad *</label>
+                                        <input type="number" name="cantidad" class="form-control" min="1" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label>Costo Unitario *</label>
+                                        <input type="number" step="0.01" name="costo_unitario" class="form-control" min="0" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label>Vehículo (placa) *</label>
+                                        <select name="placa" class="form-control" required>
+                                            <option value="">-- Seleccionar vehículo --</option>
+                                            {% for v in vehiculos %}
+                                            <option value="{{ v.placa }}">{{ v.placa }} - {{ v.modelo }} ({{ v.color }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-plus-circle"></i> Agregar Insumo
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{{ url_for('compras.listar') }}" class="btn btn-secondary">Volver</a>
+                    {% if compra.estado != 'Completada' and compra.detalles %}
+                    <a href="{{ url_for('compras.finalizar_compra', cod_compras=compra.cod_compras) }}" 
+                       class="btn btn-success"
+                       onclick="return confirm('¿Finalizar esta compra? No podrá agregar más insumos.')">
+                        <i class="bi bi-check-circle"></i> Finalizar Compra
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

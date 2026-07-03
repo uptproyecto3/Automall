@@ -4,22 +4,24 @@
 <div class="container mt-5">
     <h2 class="mb-4">Gestión de Permisos por Rol</h2>
 
-     {% with messages = get_flashed_messages() %}
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-succesfull d-flex align-items-center py-2 border-0 shadow-sm mb-4" role="alert">
-                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                    <div class="small">{{ message }}</div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
+    {# Sección de Alertas / Mensajes Flash (Corregido el estilo de Bootstrap) #}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success d-flex align-items-center py-2 border-0 shadow-sm mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <div class="small">{{ message }}</div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
+    {# Selector de Roles #}
     <div class="row mb-4">
         <div class="col-md-6">
             <form action="{{ url_for('permisos.gestionar') }}" method="GET">
-                <label>Seleccione el Rol a configurar:</label>
-                <select name="cod_rol" class="form-select" onchange="this.form.submit()">
+                <label class="form-label fw-bold">Seleccione el Rol a configurar:</label>
+                <select name="cod_rol" class="form-select shadow-sm" onchange="this.form.submit()">
                     <option value="">-- Seleccione un rol --</option>
                     {% for r in roles %}
                     <option value="{{ r.cod_rol }}" {% if id_rol_seleccionado == r.cod_rol %}selected{% endif %}>
@@ -31,36 +33,63 @@
         </div>
     </div>
 
+    {# Matriz Dinámica de Permisos #}
     {% if id_rol_seleccionado %}
-    <form method="POST">
+    <form method="POST" action="{{ url_for('permisos.gestionar') }}">
         <input type="hidden" name="id_rol_actual" value="{{ id_rol_seleccionado }}">
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Módulo</th>
-                    <th>Crear</th>
-                    <th>Leer</th>
-                    <th>Editar</th>
-                    <th>Eliminar</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in permisos %}
-                <tr>
-                    <input type="hidden" name="cod_permiso" value="{{ p.cod_permiso }}">
-                    <td><strong>{{ p.nombre_modulo }}</strong></td>
-                    <td><input type="checkbox" name="crear_{{ p.cod_permiso }}" {% if p.p_crear %}checked{% endif %}></td>
-                    <td><input type="checkbox" name="leer_{{ p.cod_permiso }}" {% if p.p_leer %}checked{% endif %}></td>
-                    <td><input type="checkbox" name="actualizar_{{ p.cod_permiso }}" {% if p.p_actualizar %}checked{% endif %}></td>
-                    <td><input type="checkbox" name="eliminar_{{ p.cod_permiso }}" {% if p.p_eliminar %}checked{% endif %}></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <button type="submit" class="btn btn-primary w-100">Guardar Permisos para este Rol</button>
+        
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 30%;">Módulo</th>
+                            <th style="width: 70%;">Acciones y Operaciones Disponibles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# Agrupamos la matriz plana por el nombre del módulo automáticamente #}
+                        {% for grupo in permisos|groupby('nombre_modulo') %}
+                        <tr>
+                            <td class="bg-light">
+                                <span class="fs-6 fw-bold text-secondary">
+                                    <i class="bi bi-box-seam me-2"></i>{{ grupo.grouper }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-4 py-1">
+                                    {# Iteramos sobre cada acción configurada para este módulo específico #}
+                                    {% for item in grupo.list %}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="permisos_activos" 
+                                               value="{{ item.cod_permiso }}" 
+                                               id="permiso_{{ item.cod_permiso }}"
+                                               {% if item.activo == 1 %}checked{% endif %}>
+                                        <label class="form-check-label text-dark" for="permiso_{{ item.cod_permiso }}">
+                                            {{ item.nom_accion }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white p-3 border-top-0">
+                <button type="submit" class="btn btn-primary d-flex align-items-center justify-content-center w-100 py-2 shadow-sm fw-bold">
+                    <i class="bi bi-shield-lock-fill me-2"></i> Guardar Cambios de Seguridad
+                </button>
+            </div>
+        </div>
     </form>
     {% else %}
-    <div class="alert alert-info">Por favor, seleccione un rol del menú superior para ver y editar sus permisos.</div>
+    <div class="alert alert-info border-0 shadow-sm" role="alert">
+        <i class="bi bi-info-circle-fill me-2"></i> Por favor, seleccione un rol del menú superior para ver y editar sus accesos.
+    </div>
     {% endif %}
 </div>
 {% endblock %}

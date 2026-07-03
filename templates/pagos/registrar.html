@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5 px-4">
+    <div class="card shadow-lg border-0 mx-auto" style="max-width: 1000px; border-radius: 20px; overflow: hidden;">
+        
+        <div class="card-header bg-dark text-white p-4 text-center border-0">
+            <h3 class="fw-bold mb-1">Registrar Pago / Abono de Cuenta</h3>
+            <p class="text-white small mb-0">Gestione y amortice los saldos pendientes de la flota vehicular</p>
+        </div>
+
+        <div class="card-body p-5">
+            <form id="form-abono" autocomplete="off">
+                
+                <div class="row g-4">
+                    
+                    <div class="col-md-5 border-end pe-md-4">
+                        <h5 class="fw-bold text-secondary mb-4 text-uppercase small"><i class="bi bi-folder-check me-2"></i>Estado de Cuenta</h5>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small">Vehículo con Deuda Activa</label>
+                            <select class="form-select form-select-lg shadow-sm" id="cod_cuentas" name="cod_cuentas" required onchange="actualizarInfoDeuda()">
+                                <option value="" disabled selected>Seleccione una cuenta...</option>
+                                {% for d in deudas %}
+                                <option value="{{ d.cod_cuentas }}" 
+                                        data-total="{{ d.deuda_total }}" 
+                                        data-saldo="{{ d.saldo_pendiente }}">
+                                    Placa: {{ d.placa }} (Debe: ${{ "{:,.2f}".format(d.saldo_pendiente) }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded-3 text-center border">
+                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Deuda Histórica</small>
+                                    <span class="fw-bold fs-5 text-dark" id="lbl_total">$ 0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-primary bg-opacity-10 rounded-3 text-center border border-primary border-opacity-25">
+                                    <small class="text-primary d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Saldo Pendiente</small>
+                                    <span class="fw-bold fs-5 text-primary" id="lbl_saldo">$ 0.00</span>
+                                    <input type="hidden" id="saldo_actual_val" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Notas u Observaciones del Operador</label>
+                            <textarea class="form-control" name="descripcion" rows="4" placeholder="Ej: Pago correspondiente a la segunda cuota del mes en curso..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7 ps-md-4 text-start">
+                        <h5 class="fw-bold text-secondary mb-4 text-uppercase small"><i class="bi bi-cash-coin me-2"></i>Detalles de Transacción</h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Monto a Abonar</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-currency-dollar"></i></span>
+                                    <input type="number" step="0.01" class="form-control border-start-0 fw-bold text-dark" id="monto_pago" name="monto_pago" required oninput="calcularNuevoSaldo()" placeholder="0.00">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Método de Pago Empleado</label>
+                                <select class="form-select fw-bold text-primary" name="cod_metodo" id="cod_metodo" required onchange="evaluarMetodo()">
+                                    {% for mp in metodos %}
+                                    <option value="{{ mp.cod_metodo }}">{{ mp.nombre_metodo }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-12 my-2">
+                                <div class="row g-3">
+                                    
+                                    <div class="col-md-6" id="wrapper_moneda">
+                                        <label class="form-label small fw-bold text-muted">Moneda de Recepción</label>
+                                        <select class="form-select" name="cod_moneda" id="cod_moneda" required>
+                                            {% for m in monedas %}
+                                            <option value="{{ m.cod_moneda }}">{{ m.nombre_moneda }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6" id="div_banco">
+                                        <label class="form-label small fw-bold text-muted">Banco Receptor</label>
+                                        <select class="form-select" name="cod_banco" id="cod_banco">
+                                            {% for b in bancos %}
+                                            <option value="{{ b.cod_banco }}">{{ b.nombre_banco }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-12" id="wrapper_moneda_digital" style="display: none;">
+                                        <label class="form-label small fw-bold text-warning text-uppercase" style="font-size: 0.75rem;">Billetera / Red Digital Destino</label>
+                                        <select class="form-select border-warning fw-bold text-dark" name="cod_mon_digital" id="cod_mon_digital">
+                                            <option value="" disabled selected>Seleccione Billetera...</option>
+                                            {% for md in monedas_digitales %}
+                                            <option value="{{ md.cod_mon_digital }}">{{ md.nombre_digital }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">Código de Referencia / ID de Transacción (TXID)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-hash"></i></span>
+                                    <input type="text" class="form-control border-start-0" name="referencia" placeholder="Inserte número de confirmación o hash de bloque">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 p-3 bg-dark text-white text-center rounded-3 shadow-sm border border-secondary border-opacity-25">
+                            <small class="d-block opacity-75 text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Balance Remanente Estimado</small>
+                            <h3 class="fw-bold mb-0 text-success" id="lbl_nuevo_saldo">$ 0.00</h3>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-lg mt-4 py-3 fw-bold shadow-sm" id="btn-procesar">
+                            Registrar Pago <i class="bi bi-arrow-right-circle ms-2"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f4f7f6; }
+    .form-control, .form-select { border-radius: 10px; padding: 11px 15px; border: 1px solid #e0e0e0; font-size: 0.9rem; }
+    .form-control:focus, .form-select:focus { box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1); border-color: #0d6efd; }
+    .input-group-text { border-radius: 10px 0 0 10px; border: 1px solid #e0e0e0; }
+    .btn { border-radius: 10px; transition: all 0.3s; }
+    .card-header { background: linear-gradient(45deg, #1f2327, #2c3034); }
+</style>
+
+<script src="{{ url_for('static', filename='js/pago.js') }}"></script>
+<script src="{{ url_for('static', filename='js/validaciones_pago.js') }}"></script>
+{% endblock %}

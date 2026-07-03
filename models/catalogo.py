@@ -17,13 +17,13 @@ class Catalogo:
                 c.precio, 
                 c.descripcion,
                 d.fecha_ingreso,
-                p.razon_social as nombre_proveedor
+                p.razon_social as nombre_propietario
             FROM vehiculo v
             JOIN catalogo c ON v.placa = c.placa
             JOIN modelo mo ON v.cod_modelo = mo.cod_modelo
             JOIN marca ma ON mo.cod_marca = ma.cod_marca
             JOIN documentacion d ON v.cod_documento = d.cod_documento
-            JOIN proveedor p ON v.cedula_proveedor = p.cedula_proveedor
+            JOIN propietario p ON v.cedula_propietario = p.cedula_propietario
             LEFT JOIN imagen i ON v.placa = i.placa
             WHERE v.estado = 'Disponible'
             ORDER BY c.fecha_publicacion DESC

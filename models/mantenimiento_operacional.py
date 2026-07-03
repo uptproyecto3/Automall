@@ -51,12 +51,12 @@ class MantenimientoOperacional:
         return rows
 
     @staticmethod
-    def obtener_proveedores():
+    def obtener_propietarios():
         conexion = obtener_conexion()
         cursor = conexion.cursor(dictionary=True)
         cursor.execute("""
-            SELECT cedula_proveedor, razon_social
-            FROM proveedor
+            SELECT cedula_propietario, nombre
+            FROM propietario
             WHERE estado = 'Activo' OR estado = '1'
             ORDER BY razon_social ASC
         """)

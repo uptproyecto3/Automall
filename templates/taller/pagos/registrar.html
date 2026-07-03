@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="card shadow-lg border-0" style="border-radius: 20px;">
+        <div class="card-body p-4">
+            <h3 class="fw-bold text-center mb-4 text-primary">Registrar Pago</h3>
+            
+            <form id="form-abono">
+                <!-- Selección de Deuda -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Seleccionar Vehículo con Deuda</label>
+                    <select class="form-select form-select-lg" id="cod_cuentas" name="cod_cuentas" required onchange="actualizarInfoDeuda()">
+                        <option value="" disabled selected>Seleccione una cuenta...</option>
+                        {% for d in deudas %}
+                        <option value="{{ d.cod_cuentas }}" 
+                                data-total="{{ d.deuda_total }}" 
+                                data-saldo="{{ d.saldo_pendiente }}">
+                            Placa: {{ d.placa }} (Debe: ${{ "{:,.2f}".format(d.saldo_pendiente) }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Cuadros de Información Dinámica -->
+                <div class="row g-2 mb-4">
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded text-center">
+                            <small class="text-muted d-block">Deuda Total</small>
+                            <span class="fw-bold fs-5" id="lbl_total">$ 0.00</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-primary bg-opacity-10 rounded text-center">
+                            <small class="text-primary d-block">Saldo Actual</small>
+                            <span class="fw-bold fs-5 text-primary" id="lbl_saldo">$ 0.00</span>
+                            <input type="hidden" id="saldo_actual_val" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Datos del Pago -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Monto a Abonar</label>
+                        <input type="number" step="0.01" class="form-control" id="monto_pago" name="monto_pago" required oninput="calcularNuevoSaldo()">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Moneda</label>
+                        <select class="form-select" name="cod_moneda" required>
+                            {% for m in monedas %}
+                            <option value="{{ m.cod_moneda }}">{{ m.nombre_moneda }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Método de Pago</label>
+                        <select class="form-select" name="cod_metodo" id="cod_metodo" required onchange="evaluarMetodo()">
+                            {% for mp in metodos %}
+                            <option value="{{ mp.cod_metodo }}">{{ mp.nombre_metodo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6" id="div_banco">
+                        <label class="form-label small fw-bold">Banco / Plataforma</label>
+                        <select class="form-select" name="cod_banco">
+                            {% for b in bancos %}
+                            <option value="{{ b.cod_banco }}">{{ b.nombre_banco }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Referencia / TXID</label>
+                        <input type="text" class="form-control" name="referencia" placeholder="Número de confirmación">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Descripción</label>
+                        <textarea class="form-control" name="descripcion" rows="2" placeholder="Ej: Pago cuota marzo"></textarea>
+                    </div>
+                </div>
+
+                <!-- Resumen Final -->
+                <div class="mt-4 p-3 bg-dark rounded text-white text-center">
+                    <small class="d-block opacity-75">Nuevo Saldo tras este pago:</small>
+                    <h4 class="fw-bold mb-0" id="lbl_nuevo_saldo">$ 0.00</h4>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-lg mt-4 shadow" id="btn-procesar">
+                    Registrar Pago
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Importación del archivo JS externo -->
+<script src="{{ url_for('static', filename='js/pago.js') }}"></script>
+{% endblock %}

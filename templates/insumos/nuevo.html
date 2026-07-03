@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Insumo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="bi bi-plus-circle"></i> Registrar Nuevo Insumo</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label>Nombre del Insumo *</label>
+                            <input type="text" name="nombre" class="form-control" placeholder="Ej: Aceite de Motor, Jabón, Filtro..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Descripción</label>
+                            <textarea name="descripcion" class="form-control" rows="3" placeholder="Descripción detallada del insumo..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label>Stock Inicial</label>
+                            <input type="number" name="stock" class="form-control" value="0" min="0">
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> El stock se actualizará automáticamente al realizar compras.
+                        </div>
+                        <div class="text-end">
+                            <a href="{{ url_for('insumos.listar') }}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-save"></i> Guardar Insumo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
